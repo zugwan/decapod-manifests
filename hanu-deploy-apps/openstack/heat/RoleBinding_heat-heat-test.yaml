@@ -1,0 +1,16 @@
+
+# Source: heat/templates/pod-rally-test.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: heat-heat-test
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: heat-openstack-heat-test
+subjects:
+  - kind: ServiceAccount
+    name: heat-test
+    namespace: openstack
+

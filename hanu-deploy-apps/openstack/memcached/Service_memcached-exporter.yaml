@@ -1,0 +1,22 @@
+
+# Source: memcached/templates/monitoring/prometheus/exporter-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: memcached-exporter
+  labels:
+    release_group: memcached
+    application: prometheus_memcached_exporter
+    component: metrics
+  annotations:
+    
+    prometheus.io/scrape: "true"
+spec:
+  ports:
+  - name: metrics
+    port: 9150
+  selector:
+    release_group: memcached
+    application: prometheus_memcached_exporter
+    component: exporter
+

@@ -1,0 +1,57 @@
+
+# Source: sona/templates/deploy-sona.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sona-config
+  labels:
+    release_group: sona
+    application: sona-config
+    component: onos
+spec:
+  selector:
+    matchLabels:
+      release_group: sona
+      application: sona-config
+      component: onos
+  template:
+    metadata:
+      labels:
+        release_group: sona
+        application: sona-config
+        component: onos
+      annotations:
+        configmap-cfg-hash: "4dc440926074faf219b1f2a3f8544f28696b5e573d1e3e52f32cfc332432b896"
+    spec:
+
+      nodeSelector:
+        sona-control-plane: "enabled"
+
+      hostNetwork: true
+      containers:
+      - name: sonaconfig
+        image: opensona/os-client-docker:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9494
+        command: ['/tmp/config-node.sh']
+        volumeMounts:
+          - name: sona-bin
+            mountPath: /tmp/config-node.sh
+            subPath: config-node.sh
+            readOnly: true
+          - name: network-config
+            mountPath: /tmp/network-config
+            readOnly: false
+      volumes:
+        - name: sona-bin
+          configMap:
+            name: sona-bin
+            defaultMode: 0555
+        - name: network-config
+          hostPath:
+            path: /tmp/network-config
+            type: DirectoryOrCreate
+      dnsPolicy: ClusterFirstWithHostNet
+      restartPolicy: Always
+

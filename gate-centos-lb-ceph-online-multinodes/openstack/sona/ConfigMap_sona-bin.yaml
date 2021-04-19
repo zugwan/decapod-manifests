@@ -1,0 +1,640 @@
+
+# Source: sona/templates/configmap-bin.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sona-bin
+data:
+  push-cluster-component.sh: |
+    #!/bin/sh
+    
+    
+    rm -rf /tmp/sona-config/*.json
+    python /tmp/onos-gen-partitions.py /tmp/sona-config/cluster.json $MY_POD_IP
+    
+    component_cfg='echo "{
+      \"org.onosproject.openstacknetworking.impl.OpenstackRoutingArpHandler\": {
+        \"arpMode\": \"broadcast\"
+      },
+      \"org.onosproject.openstacknetworking.impl.OpenstackSwitchingArpHandler\": {
+        \"arpMode\": \"broadcast\"
+      },
+      \"org.onosproject.net.flow.impl.FlowRuleManager\": {
+        \"allowExtraneousRules\": true
+      },
+      \"org.onosproject.openstacknetworking.impl.OpenstackRoutingSnatHandler\": {
+        \"useStatefulSnat\": TO_BE_FIXED
+      },
+      \"org.onosproject.openstacknode.impl.DefaultOpenstackNodeHandler\": {
+        \"ovsdbPortNum\": TO_BE_FIXED
+      }
+    }" > /tmp/sona-config/component-cfg.json'
+    
+    $(eval $component_cfg)
+    
+    exit 0
+    
+  sona-readiness-check.sh: |
+    #!/bin/sh
+    
+    
+    set -x
+    
+    ONOS_USER="onos"
+    ONOS_PASSWORD="rocks"
+    SONA_CONF_FILE="/tmp/network-config/network-cfg.json"
+    export OS_PROJECT_NAME=admin
+    export OS_USERNAME=admin
+    export OS_PASSWORD=password
+    export OS_AUTH_URL="http://TO_BE_FIXED"
+    export OS_IDENTITY_API_VERSION=3
+    
+    function check_sona_app () {
+      check_str='curl -sL --user $ONOS_USER:$ONOS_PASSWORD -w "%{http_code}\\n" "http://$1:8181/onos/openstacknetworking/management/floatingips/all" -o /dev/null'
+      eval $check_str
+    }
+    
+    check_neutron_str='openstack network list'
+    eval $check_neutron_str
+    
+    if [[ $? -ne 0 ]]
+    then
+      echo "Neutron service is not available, exit 1 after sleeping 10s"
+      sleep 10;
+      exit 1
+    else
+      echo "Neutron service is available!"
+    fi
+    
+    check_sona_app_str='check_sona_app $MY_POD_IP'
+    
+    sleep 5;
+    if [ $(eval $check_sona_app_str) != "200" ];
+    then
+      sleep 5;
+      if [ $(eval $check_sona_app_str) != "200" ];
+      then
+        sleep 5;
+        if [ $(eval $check_sona_app_str) != "200" ];
+        then
+          echo "SONA isn't activated yet.. Restart readinessProbe." 
+          exit 1
+        fi
+      fi
+    fi
+    
+    echo "Done, Bye!"
+    
+    exit 0
+    
+  sona-onos-readiness-check.sh: |
+    #!/bin/sh
+    
+    
+    set -x
+    
+    ONOS_USER="onos"
+    ONOS_PASSWORD="rocks"
+    SONA_CONF_FILE="/tmp/network-config/network-cfg.json"
+    
+    function check_sona_app () {
+      check_str='curl -sL --user $ONOS_USER:$ONOS_PASSWORD -w "%{http_code}\\n" "http://$1:8181/onos/openstacknetworking/management/floatingips/all" -o /dev/null'
+      eval $check_str
+    }
+    
+    check_sona_app_str='check_sona_app $MY_POD_IP'
+    
+    sleep 5;
+    if [ $(eval $check_sona_app_str) != "200" ];
+    then
+      sleep 5;
+      if [ $(eval $check_sona_app_str) != "200" ];
+      then
+        sleep 5;
+        if [ $(eval $check_sona_app_str) != "200" ];
+        then
+          echo "SONA isn't activated yet.. Restart readinessProbe." 
+          exit 1
+        fi
+      fi
+    fi
+    
+    echo "Done, Bye!"
+    
+    exit 0
+    
+  sona-liveness-check.sh: |
+    #!/bin/sh
+    
+    
+    set -x
+    
+    ONOS_USER="onos"
+    ONOS_PASSWORD="rocks"
+    SONA_CONF_FILE="/tmp/network-config/network-cfg.json"
+    
+    function check_sona_app () {
+      check_str='curl -sL --user $ONOS_USER:$ONOS_PASSWORD -w "%{http_code}\\n" "http://$1:8181/onos/openstacknetworking/management/floatingips/all" -o /dev/null'
+      eval $check_str
+    }
+    
+    check_sona_app_str='check_sona_app $MY_POD_IP'
+    
+    if [ $(eval $check_sona_app_str) != "200" ];
+    then
+      echo "Seems like SONA app is dead.. Restart."
+      exit 1
+    fi
+    
+    exit 0
+    
+  sona-ha.sh: |
+    #!/bin/sh
+    
+    
+    set -x
+    
+    ONOS_USER="onos"
+    ONOS_PASSWORD="rocks"
+    export SONA_POD_IP=sona-onos
+    SONA_CONF_FILE="/tmp/network-config/network-cfg.json"
+    
+    export OS_PROJECT_NAME=admin
+    export OS_USERNAME=admin
+    export OS_PASSWORD=password
+    export OS_AUTH_URL="http://TO_BE_FIXED"
+    export OS_IDENTITY_API_VERSION=3
+    
+    function check_sona_app () {
+      check_str='curl -sL --user $ONOS_USER:$ONOS_PASSWORD -w "%{http_code}\\n" "http://$1:8181/onos/openstacknetworking/management/floatingips/all" -o /dev/null'
+      eval $check_str
+    }
+    
+    function restore_node_config () {
+      curl_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X POST -H "Content-Type: application/json" http://$1:8181/onos/openstacknode/configure -d @$SONA_CONF_FILE'
+      eval $curl_str
+    }
+    
+    function sync_states () {
+      curl_str='curl -i --user $ONOS_USER:$ONOS_PASSWORD -X GET http://$1:8181/onos/openstacknetworking/management/sync/states 2>/dev/null | head -n 1 | cut -d$i" " -f2'
+      eval $curl_str
+    }
+    
+    function sync_rules () {
+      curl_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X GET http://$1:8181/onos/openstacknetworking/management/sync/rules -o /dev/null' 
+      eval $curl_str
+    }
+    
+    function configure_standby() {
+      curl_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X PUT http://$1:8181/onos/openstacknetworking/management/active/status/false -o /dev/null'
+      eval $curl_str
+    }
+    
+    function configure_active() {
+      curl_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X PUT http://$1:8181/onos/openstacknetworking/management/active/status/true -o /dev/null'
+      eval $curl_str
+    }
+    
+    function configure_active_node_ip() {
+      curl_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X PUT http://$1:8181/onos/openstacknetworking/management/active/ip/$2 -o /dev/null'
+      eval $curl_str
+    }
+    
+    function is_node_active() {
+      curl_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X GET http://$1:8181/onos/openstacknetworking/management/active/status'
+      eval $curl_str
+    }
+    
+    function get_active_node_ip() {
+      curl -s --user $ONOS_USER:$ONOS_PASSWORD -X GET http://localhost:8181/onos/openstacknetworking/management/active/ip
+    }
+    
+    function init_node_all() {
+      curl -s --user $ONOS_USER:$ONOS_PASSWORD -X GET http://localhost:8181/onos/openstacknode/configure/init/all
+    }
+    
+    function init_node_incomplete() {
+      curl -s --user $ONOS_USER:$ONOS_PASSWORD -X GET http://localhost:8181/onos/openstacknode/configure/init/incomplete
+    }
+    
+    function get_nodes() {
+      curl -s --user $ONOS_USER:$ONOS_PASSWORD -X GET http://localhost:8181/onos/openstacknode/configure
+    }
+    
+    function change_master_to_this_node() {
+      remote_POD_ip='Remote POD IP Address'
+    
+      if [ $MY_POD_IP = 'TO_BE_FIXED' ];
+      then
+        echo "This node is master"
+        remote_POD_ip='TO_BE_FIXED'
+      else
+        echo "This node is slave"
+        remote_POD_ip='TO_BE_FIXED'
+      fi    
+      restore_node_config $MY_POD_IP
+      sleep 3
+    
+      sync_state_result=$(eval sync_states $MY_POD_IP)
+      if [ -z $sync_state_result ] || [ $sync_state_result != "200" ];
+      then
+        echo "sync_states failed. Retry once.."
+        sync_state_result=$(eval sync_states $MY_POD_IP)
+        if [ -z $sync_state_result ] || [ $sync_state_result != "200" ];
+        then
+          echo "sync_states failed. Retry twice.."     
+          sync_state_result=$(eval sync_states $MY_POD_IP)
+          if [ -z $sync_state_result ] || [ $sync_state_result != "200" ];
+          then
+            echo "sync_states failed three times so exit.."
+            exit 1
+          fi
+        fi
+      fi
+    
+      init_node_all
+      configure_active $MY_POD_IP
+      configure_active_node_ip $MY_POD_IP $MY_POD_IP
+      sync_rules $MY_POD_IP
+    }
+    
+    function change_master_to_this_node_master {
+      change_master_to_this_node
+    
+      configure_standby $remote_POD_ip
+      configure_active_node_ip $remote_POD_ip $MY_POD_IP
+    }
+    
+    sleep 30
+    
+    check_neutron_str='openstack network list'
+    eval $check_neutron_str
+    
+    if [[ $? -ne 0 ]]
+    then
+      echo "Neutron service is not available, exit 1 after sleeping 10s"
+      sleep 10;
+      exit 1
+    else
+      echo "Neutron service is available!"
+    fi
+    
+    check_sona_app_str='check_sona_app $MY_POD_IP'
+    if [ $(eval $check_sona_app_str) != "200" ];
+    then
+      sleep 5;
+      if [ $(eval $check_sona_app_str) != "200" ];
+      then
+        sleep 5;
+        if [ $(eval $check_sona_app_str) != "200" ];
+        then
+          echo "SONA isn't activated yet.. Restart sona-ha container."
+          exit 1
+        fi
+      fi
+    fi
+    echo "SONA apps at $MY_POD_IP are activated!"
+    
+    rm -rf $SONA_CONF_FILE
+    
+    cat > $SONA_CONF_FILE << EOF
+    {"nodes": [
+    {
+       "hostname": "controller",
+       "type": "CONTROLLER",
+       "managementIp": "127.0.0.1",
+       "keystoneConfig": {
+         "endpoint": "TO_BE_FIXED",
+         "authentication": {
+           "version": "v3",
+           "protocol": "HTTP",
+           "project": "admin",
+           "username": "admin",
+           "password": "password",
+           "perspective": "PUBLIC"
+         }
+       }
+       ,
+       "neutronConfig": {
+         "useMetadataProxy": true,
+         "metadataProxySecret": "password",
+         "novaMetadataIp": "TO_BE_FIXED",
+         "novaMetadataPort": 8775
+       }
+    }
+    ]}
+    EOF
+    
+    cat $SONA_CONF_FILE
+    
+    remote_POD_ip='Remote POD IP Address'
+    
+    if [ $MY_POD_IP = 'TO_BE_FIXED' ];
+    then
+      echo "This node is master"
+      change_master_to_this_node_master
+      while true
+      do
+        sleep 10
+        has_compute_nodes=$(eval get_nodes | grep COMPUTE | wc -l)
+        if [ $has_compute_nodes == 0 ];
+        then
+          echo "Decide there's no node information from this ONOS..Restart sona-ha container."
+          exit 1
+        else
+          init_node_incomplete
+        fi
+      done
+    else
+      echo "This node is slave"
+      remote_POD_ip='TO_BE_FIXED'
+      check_is_this_node_active_str='is_node_active $MY_POD_IP'
+      check_is_remote_node_active_str='is_node_active $remote_POD_ip'
+    
+      configure_standby $MY_POD_IP
+      configure_active_node_ip $MY_POD_IP $remote_POD_ip
+    
+      while true
+      do 
+        sleep 10
+        is_this_node_active=$(eval $check_is_this_node_active_str | grep true | wc -l)
+        is_remote_node_active=$(eval $check_is_remote_node_active_str | grep true | wc -l)
+        
+        has_default_active_node_ip=$(eval get_active_node_ip | grep 127.0.0.1 | wc -l)
+        if [ $has_default_active_node_ip == 1 ];
+        then
+          echo "ONOS has default active node IP 127.0.0.1... Restart sona-ha container."
+          exit 1
+        fi
+    
+        if [ $is_this_node_active == 1 ] && [ $is_remote_node_active == 0 ];
+        then
+          has_compute_nodes=$(eval get_nodes | grep COMPUTE | wc -l)
+          if [ $has_compute_nodes == 0 ];
+          then
+            echo "Decide there's no node information from this ONOS..Restart sona-ha container."
+            exit 1
+          else
+            init_node_incomplete
+          fi
+        elif [ $is_this_node_active == 0 ] && [ $is_remote_node_active == 0 ];
+        then
+          sleep 5;
+          if [ $is_this_node_active == 0 ] && [ $is_remote_node_active == 0 ];
+          then
+            sleep 5;
+            if [ $is_this_node_active == 0 ] && [ $is_remote_node_active == 0 ];
+            then
+              echo "Decide both nodes are standby which is illegal. Change master to this ONOS"
+              change_master_to_this_node
+            fi
+          fi
+        elif [ $is_this_node_active == 1 ] && [ $is_remote_node_active == 1 ]; 
+        then
+          echo "Both nodes are active which is unintended situation. Configure the slave node to standby state"
+          configure_standby $MY_POD_IP
+          configure_active_node_ip $MY_POD_IP $remote_POD_ip
+        fi
+      done
+    fi
+    
+    
+  config-node.sh: |
+    #!/bin/bash
+    
+    
+    set -x
+    
+    ONOS_USER="onos"
+    ONOS_PASSWORD="rocks"
+    SONA_CONF_FILE="/tmp/network-config/network-cfg.json"
+    
+    remote_nodes=[]
+    local_nodes=[]
+    
+    function add_node_config () {
+      curl_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X POST -H "Content-Type: application/json" http://$1:8181/onos/openstacknode/configure -d @$SONA_CONF_FILE'
+      eval $curl_str
+    }
+    
+    function is_node_active() {
+      curl_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X GET http://$1:8181/onos/openstacknetworking/management/active/status'
+      eval $curl_str
+    }
+    
+    function get_nodes_from_remote() {
+      json_nodes_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X GET http://$1:8181/onos/openstacknode/configure'
+      json_nodes=$(eval $json_nodes_str)
+      remote_nodes=($(echo $json_nodes | jq -c -r '.nodes | .[] | .hostname'))
+    }
+    
+    function get_nodes_from_local() {
+      json_nodes_str='cat $1'
+      json_nodes=$(eval $json_nodes_str)
+      local_nodes=($(echo $json_nodes | jq -c -r '.nodes | .[] | .hostname'))
+    }
+    
+    function delete_node() {
+      curl_str='curl -s --user $ONOS_USER:$ONOS_PASSWORD -X DELETE http://$1:8181/onos/openstacknode/configure/$2'
+      eval $curl_str
+    }
+    
+    rm -rf $SONA_CONF_FILE
+    
+    cat > $SONA_CONF_FILE << EOF
+    {"nodes": [
+    {
+       "hostname": "controller",
+       "type": "CONTROLLER",
+       "managementIp": "127.0.0.1",
+       "keystoneConfig": {
+         "endpoint": "TO_BE_FIXED",
+         "authentication": {
+           "version": "v3",
+           "protocol": "HTTP",
+           "project": "admin",
+           "username": "admin",
+           "password": "password",
+           "perspective": "PUBLIC"
+         }
+       }
+       ,
+       "neutronConfig": {
+         "useMetadataProxy": true,
+         "metadataProxySecret": "password",
+         "novaMetadataIp": "TO_BE_FIXED",
+         "novaMetadataPort": 8775
+       }
+    }
+    ]}
+    EOF
+    
+    cat $SONA_CONF_FILE
+    
+    master_pod_ip='TO_BE_FIXED'
+    slave_pod_ip='TO_BE_FIXED'
+    
+    is_master_node_active_str='is_node_active $master_pod_ip'
+    is_slave_node_active_str='is_node_active $slave_pod_ip'
+    
+    is_master_node_active=$(eval $is_master_node_active_str | grep true | wc -l)
+    is_slave_node_active=$(eval $is_slave_node_active_str | grep true | wc -l)
+    
+    get_nodes_from_local $SONA_CONF_FILE
+    
+    if [ $is_master_node_active == 1 ] && [ $is_slave_node_active == 0 ];
+    then
+      add_node_config $master_pod_ip
+      get_nodes_from_remote $master_pod_ip
+      echo "New node configs are added to master!"
+    
+      for item in "${remote_nodes[@]}"
+      do
+        if [[ ! " ${local_nodes[@]} " =~ " ${item} " ]]; then
+          diff_nodes=(${item} "${diff_nodes[@]}")
+        fi
+      done
+    
+      printf '%s\n' ${diff_nodes[@]}
+    
+      for item in "${diff_nodes[@]}"
+      do
+        delete_node $master_pod_ip $item
+      done
+    fi
+    
+    if [ $is_master_node_active == 0 ] && [ $is_slave_node_active == 1 ];
+    then
+      add_node_config $slave_pod_ip
+      get_nodes_from_remote $slave_pod_ip
+      echo "New node configs are added to slave!"
+    
+      for item in "${remote_nodes[@]}"
+      do
+        if [[ ! " ${local_nodes[@]} " =~ " ${item} " ]]; then
+          diff_nodes=(${item} "${diff_nodes[@]}")
+        fi
+      done
+    
+      printf '%s\n' ${diff_nodes[@]}
+    
+      for item in "${diff_nodes[@]}"
+      do
+        delete_node $slave_pod_ip $item
+      done
+    fi
+    
+    if [ $is_master_node_active == 0 ] && [ $is_slave_node_active == 0 ];
+    then
+      echo "No active controllers are available, failed to add compute node configs!"
+    fi
+    
+    if [ $is_master_node_active == 1 ] && [ $is_slave_node_active == 1 ];
+    then
+      echo "Both master and slave are in active status, failed to add compute node configs!"
+    fi
+    
+    while true
+    do
+      sleep 10
+    done
+    
+    exit 0
+    
+  onos-gen-partitions.py: |
+    #!/usr/bin/env python
+    
+    
+    
+    from os import environ
+    from collections import deque
+    import argparse
+    import re
+    import json
+    import hashlib
+    
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    
+    def get_OC_vars():
+      vars = []
+      for var in environ:
+        if re.match(r"OC[0-9]+", var):
+          vars.append(var)
+      return sorted(vars, key=alphanum_key)
+    
+    def get_nodes(ips=None, default_port=9876):
+        node = lambda id, ip, port : { 'id': id, 'ip': ip, 'port': port }
+        result = []
+        if not ips:
+            ips = [ environ[v] for v in get_OC_vars() ]
+        for ip_string in ips:
+            address_tuple = ip_string.split(":")
+            if len(address_tuple) == 3:
+                id=address_tuple[0]
+                ip=address_tuple[1]
+                port=int(address_tuple[2])
+            else:
+                id=ip_string
+                ip=ip_string
+                port=default_port
+            result.append(node(id, ip, port))
+        return result
+    
+    def generate_partitions(nodes, k, n):
+      l = deque(nodes)
+      perms = []
+      for i in range(1, n+1):
+        part = {
+                 'id': i,
+                 'members': list(l)[:k]
+               }
+        perms.append(part)
+        l.rotate(-1)
+      return perms
+    
+    if __name__ == '__main__':
+      parser = argparse.ArgumentParser(
+          description="Generate the partitions json file given a list of IPs or from the $OC* environment variables.")
+      parser.add_argument(
+          '-s', '--partition-size', type=int, default=3,
+          help="Number of nodes per partition. Note that partition sizes smaller than 3 are not fault tolerant. Defaults to 3." )
+      parser.add_argument(
+          '-n', '--num-partitions', type=int,
+          help="Number of partitions. Defaults to the number of nodes in the cluster." )
+     # TODO: make filename and nodes independent. This will break backwards compatibility with existing usage.
+      parser.add_argument(
+         'filename', metavar='filename', type=str, nargs='?',
+         help='File to write output to. If none is provided, output is written to stdout.')
+      parser.add_argument(
+          'nodes', metavar='node_ip', type=str, nargs='*',
+          help='IP Address(es) of the node(s) in the cluster. If no IPs are given, ' +
+               'will use the $OC* environment variables. NOTE: these arguemnts' +
+               ' are only processed after the filename argument.')
+    
+      args = parser.parse_args()
+      filename = args.filename
+      partition_size = args.partition_size
+      nodes = get_nodes(args.nodes)
+      num_partitions = args.num_partitions
+      if not num_partitions:
+        num_partitions = len(nodes)
+    
+      partitions = generate_partitions([v.get('id') for v in nodes], partition_size, num_partitions)
+      m = hashlib.sha256()
+      for node in nodes:
+        m.update(node['ip'])
+      name = int(m.hexdigest()[:8], base=16) # 32-bit int based on SHA256 digest
+      data = {
+               'name': name,
+               'nodes': nodes,
+               'partitions': partitions
+             }
+      output = json.dumps(data, indent=4)
+    
+      if filename:
+        with open(filename, 'w') as f:
+          f.write(output)
+      else:
+        print output
+

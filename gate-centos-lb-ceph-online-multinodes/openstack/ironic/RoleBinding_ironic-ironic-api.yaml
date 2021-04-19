@@ -1,0 +1,16 @@
+
+# Source: ironic/templates/deployment-api.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ironic-ironic-api
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ironic-openstack-ironic-api
+subjects:
+  - kind: ServiceAccount
+    name: ironic-api
+    namespace: openstack
+

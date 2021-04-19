@@ -1,0 +1,16 @@
+
+# Source: horizon/templates/pod-helm-tests.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: horizon-horizon-test
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: horizon-openstack-horizon-test
+subjects:
+  - kind: ServiceAccount
+    name: horizon-test
+    namespace: openstack
+

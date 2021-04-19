@@ -1,0 +1,22 @@
+
+# Source: mariadb/templates/monitoring/prometheus/exporter-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-exporter
+  labels:
+    release_group: mariadb
+    application: prometheus-mysql-exporter
+    component: metrics
+  annotations:
+    
+    prometheus.io/scrape: "true"
+spec:
+  ports:
+  - name: metrics
+    port: 9104
+  selector:
+    release_group: mariadb
+    application: prometheus-mysql-exporter
+    component: exporter
+

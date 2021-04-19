@@ -1,0 +1,33 @@
+
+# Source: rabbitmq/templates/ingress-management.yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rabbitmq-mgr-7b1733
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: rabbitmq-mgr-7b1733
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: rabbitmq
+              servicePort: http
+    - host: rabbitmq-mgr-7b1733.openstack
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: rabbitmq
+              servicePort: http
+    - host: rabbitmq-mgr-7b1733.openstack.svc.cluster.local
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: rabbitmq
+              servicePort: http
+

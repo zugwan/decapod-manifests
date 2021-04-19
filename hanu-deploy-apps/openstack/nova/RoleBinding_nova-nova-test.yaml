@@ -1,0 +1,16 @@
+
+# Source: nova/templates/pod-rally-test.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nova-nova-test
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: nova-openstack-nova-test
+subjects:
+  - kind: ServiceAccount
+    name: nova-test
+    namespace: openstack
+

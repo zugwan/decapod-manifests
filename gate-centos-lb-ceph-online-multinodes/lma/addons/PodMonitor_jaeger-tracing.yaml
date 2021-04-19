@@ -1,0 +1,15 @@
+
+# Source: lma-addons/templates/service-monitor/jaeger.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: jaeger-tracing
+  namespace: lma
+spec:
+  podMetricsEndpoints:
+  - targetPort: 14269
+    interval: 10s
+  selector:
+    matchLabels:
+      app: jaeger
+

@@ -1,0 +1,93 @@
+
+# Source: horizon/templates/job-db-init.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "horizon-db-init"
+spec:
+  backoffLimit: 1000
+  template:
+    metadata:
+      labels:
+        release_group: horizon
+        application: horizon
+        component: db-init
+      annotations:
+        "openstackhelm.openstack.org/release_uuid": ""
+    spec:
+      serviceAccountName: horizon-db-init
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+      initContainers:
+        
+        - name: init
+          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:mariadb"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+      containers:
+
+        - name: "horizon-db-init-0"
+          image: docker.io/openstackhelm/heat:stein-ubuntu_bionic
+          imagePullPolicy: IfNotPresent
+          
+          env:
+            - name: ROOT_DB_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: "horizon-db-admin"
+                  key: DB_CONNECTION
+            - name: DB_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: "horizon-db-user"
+                  key: DB_CONNECTION
+          command:
+            - /tmp/db-init.py
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: db-init-sh
+              mountPath: /tmp/db-init.py
+              subPath: db-init.py
+              readOnly: true
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: db-init-sh
+          configMap:
+            name: "horizon-bin"
+            defaultMode: 0555
+

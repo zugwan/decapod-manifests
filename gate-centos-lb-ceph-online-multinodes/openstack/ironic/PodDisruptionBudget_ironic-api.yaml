@@ -1,0 +1,14 @@
+
+# Source: ironic/templates/pdb-api.yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: ironic-api
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      release_group: ironic
+      application: ironic
+      component: api
+

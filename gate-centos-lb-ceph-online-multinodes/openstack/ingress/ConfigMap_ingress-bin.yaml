@@ -1,0 +1,54 @@
+
+# Source: ingress/templates/configmap-bin.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-bin
+data:
+  ingress-controller.sh: |
+    #!/bin/bash
+    
+    
+    
+    set -ex
+    COMMAND="${@:-start}"
+    
+    function start () {
+      find /tmp/ -maxdepth 1 -writable | grep -v "^/tmp/$" | xargs -L1 -r rm -rfv
+      exec /usr/bin/dumb-init \
+          /nginx-ingress-controller \
+          --watch-namespace ${POD_NAMESPACE} \
+          --http-port=${PORT_HTTP} \
+          --https-port=${PORT_HTTPS} \
+          --healthz-port=${PORT_HEALTHZ} \
+          --status-port=${PORT_STATUS} \
+          --default-server-port=${DEFAULT_SERVER_PORT} \
+          --election-id=${RELEASE_NAME} \
+          --ingress-class=${INGRESS_CLASS} \
+          --default-backend-service=${POD_NAMESPACE}/${ERROR_PAGE_SERVICE} \
+          --configmap=${POD_NAMESPACE}/ingress-conf \
+          --tcp-services-configmap=${POD_NAMESPACE}/ingress-services-tcp \
+          --udp-services-configmap=${POD_NAMESPACE}/ingress-services-udp
+    }
+    
+    function stop () {
+      sleep 5
+      kill -TERM 1
+    }
+    
+    $COMMAND
+    
+  ingress-error-pages.sh: |
+    #!/bin/sh
+    
+    
+    
+    set -ex
+    COMMAND="${@:-start}"
+    
+    if [ "x${COMMAND}" == "xstart" ]; then
+      exec /server
+    elif [ "x${COMMAND}" == "xstop" ]; then
+      kill -TERM 1
+    fi
+

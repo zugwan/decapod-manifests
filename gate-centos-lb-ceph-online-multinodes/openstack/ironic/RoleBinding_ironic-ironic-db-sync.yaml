@@ -1,0 +1,16 @@
+
+# Source: ironic/templates/job-db-sync.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ironic-ironic-db-sync
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ironic-openstack-ironic-db-sync
+subjects:
+  - kind: ServiceAccount
+    name: ironic-db-sync
+    namespace: openstack
+

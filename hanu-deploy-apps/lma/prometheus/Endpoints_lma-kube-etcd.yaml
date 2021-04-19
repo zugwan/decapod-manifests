@@ -1,0 +1,22 @@
+
+# Source: kube-prometheus-stack/templates/exporters/kube-etcd/endpoints.yaml
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: lma-kube-etcd
+  labels:
+    app: kube-prometheus-stack-kube-etcd
+    k8s-app: etcd-server
+    
+    chart: kube-prometheus-stack-14.5.0
+    release: "prometheus"
+    heritage: "Helm"
+  namespace: kube-system
+subsets:
+  - addresses:
+      - ip: 172.27.1.222
+    ports:
+      - name: http-metrics
+        port: 2379
+        protocol: TCP
+

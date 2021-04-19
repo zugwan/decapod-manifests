@@ -1,0 +1,121 @@
+
+# Source: keystone/templates/cron-job-fernet-rotate.yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: keystone-fernet-rotate
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+spec:
+  schedule: "0 */12 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        release_group: keystone
+        application: keystone
+        component: fernet-rotate
+    spec:
+      template:
+        metadata:
+          labels:
+            release_group: keystone
+            application: keystone
+            component: fernet-rotate
+        spec:
+          serviceAccountName: keystone-fernet-rotate
+          initContainers:
+            
+            - name: init
+              image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+              imagePullPolicy: IfNotPresent  
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsUser: 65534
+              env:
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.name
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: INTERFACE_NAME
+                  value: eth0
+                - name: PATH
+                  value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+                - name: DEPENDENCY_SERVICE
+                  value: ""
+                - name: DEPENDENCY_JOBS
+                  value: "keystone-fernet-setup"
+                - name: DEPENDENCY_DAEMONSET
+                  value: ""
+                - name: DEPENDENCY_CONTAINER
+                  value: ""
+                - name: DEPENDENCY_POD_JSON
+                  value: ""
+                - name: DEPENDENCY_CUSTOM_RESOURCE
+                  value: ""
+              command:
+                - kubernetes-entrypoint
+              volumeMounts:
+                null
+          restartPolicy: OnFailure
+          nodeSelector:
+            openstack-control-plane: enabled
+          containers:
+            - name: keystone-fernet-rotate
+              image: "docker.io/openstackhelm/keystone:stein-ubuntu_bionic"
+              imagePullPolicy: IfNotPresent
+              
+              env:
+                - name: KEYSTONE_USER
+                  value: "keystone"
+                - name: KEYSTONE_GROUP
+                  value: "keystone"
+                - name: KUBERNETES_NAMESPACE
+                  value: "openstack"
+                - name: KEYSTONE_KEYS_REPOSITORY
+                  value: "/etc/keystone/fernet-keys/"
+              command:
+                - python
+                - /tmp/fernet-manage.py
+                - fernet_rotate
+              volumeMounts:
+                - name: pod-tmp
+                  mountPath: /tmp
+                - name: etckeystone
+                  mountPath: /etc/keystone
+                - name: keystone-etc
+                  mountPath: /etc/keystone/keystone.conf
+                  subPath: keystone.conf
+                  readOnly: true
+                - name: keystone-etc
+                  mountPath: /etc/keystone/logging.conf
+                  subPath: logging.conf
+                  readOnly: true
+                - name: keystone-bin
+                  mountPath: /tmp/fernet-manage.py
+                  subPath: fernet-manage.py
+                  readOnly: true
+
+          volumes:
+            - name: pod-tmp
+              emptyDir: {}
+            - name: etckeystone
+              emptyDir: {}
+            - name: keystone-etc
+              secret:
+                secretName: keystone-etc
+                defaultMode: 0444
+            - name: keystone-bin
+              configMap:
+                name: keystone-bin
+                defaultMode: 0555
+

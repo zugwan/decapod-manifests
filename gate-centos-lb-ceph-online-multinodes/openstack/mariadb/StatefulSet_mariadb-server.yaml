@@ -1,0 +1,250 @@
+
+# Source: mariadb/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  # NOTE(portdirect): the statefulset name must match the POD_NAME_PREFIX env var for discovery to work
+  name: mariadb-server
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+    configmap-bin-hash: "fce4203ed4540d925f06629a1a0cbdd1fdc3f84c827840aa90934decabc9b37e"
+    configmap-etc-hash: "748cd025b492fd7268c72e0a8509de1f65b8505b054eed76c5e1141476fab9a4"
+    mariadb-dbadmin-password-hash: "1e6d76f39aff6238267d343440e15ac49c0922ee715c5767bb3b2ef5efbb5394"
+    mariadb-sst-password-hash: "1e6d76f39aff6238267d343440e15ac49c0922ee715c5767bb3b2ef5efbb5394"
+  labels:
+    release_group: mariadb
+    application: mariadb
+    component: server
+spec:
+  serviceName: "mariadb-discovery"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      release_group: mariadb
+      application: mariadb
+      component: server
+  template:
+    metadata:
+      labels:
+        release_group: mariadb
+        application: mariadb
+        component: server
+      annotations:
+        "openstackhelm.openstack.org/release_uuid": ""
+        configmap-bin-hash: "fce4203ed4540d925f06629a1a0cbdd1fdc3f84c827840aa90934decabc9b37e"
+        configmap-etc-hash: "748cd025b492fd7268c72e0a8509de1f65b8505b054eed76c5e1141476fab9a4"
+        mariadb-dbadmin-password-hash: "1e6d76f39aff6238267d343440e15ac49c0922ee715c5767bb3b2ef5efbb5394"
+        mariadb-sst-password-hash: "1e6d76f39aff6238267d343440e15ac49c0922ee715c5767bb3b2ef5efbb5394"
+    spec:
+      shareProcessNamespace: true
+      serviceAccountName: mariadb-mariadb
+      securityContext:
+        runAsUser: 999
+      affinity:
+        
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: release_group
+                    operator: In
+                    values:
+                    - mariadb
+                  - key: application
+                    operator: In
+                    values:
+                    - mariadb
+                  - key: component
+                    operator: In
+                    values:
+                    - server
+              topologyKey: kubernetes.io/hostname
+            weight: 10
+      nodeSelector:
+        openstack-control-plane: enabled
+      initContainers:
+        
+        - name: init
+          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: ""
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+        - name: mariadb-perms
+          image: "docker.io/openstackhelm/mariadb:10.2.18"
+          imagePullPolicy: IfNotPresent
+          
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsUser: 0
+          
+          command:
+            - chown
+            - -R
+            - "mysql:mysql"
+            - /var/lib/mysql
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+      containers:
+        - name: mariadb
+          image: "docker.io/openstackhelm/mariadb:10.2.18"
+          imagePullPolicy: IfNotPresent
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 999
+          
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MARIADB_REPLICAS
+              value: "1"
+            - name: POD_NAME_PREFIX
+              value: mariadb-server
+            - name: DISCOVERY_DOMAIN
+              value: mariadb-discovery.openstack.svc.cluster.local
+            - name: DIRECT_SVC_NAME
+              value: mariadb-server
+            - name: WSREP_PORT
+              value: "4567"
+            - name: STATE_CONFIGMAP
+              value: "mariadb-mariadb-state"
+            - name: MYSQL_DBADMIN_USERNAME
+              value: root
+            - name: MYSQL_DBADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-dbadmin-password
+                  key: MYSQL_DBADMIN_PASSWORD
+            - name: MYSQL_DBSST_USERNAME
+              value: sst
+            - name: MYSQL_DBSST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-dbsst-password
+                  key: MYSQL_DBSST_PASSWORD
+          ports:
+            - name: mysql
+              protocol: TCP
+              containerPort: 3306
+            - name: wsrep
+              protocol: TCP
+              containerPort: 4567
+          command:
+            - /tmp/start.py
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /tmp/stop.sh
+          readinessProbe:
+            exec:
+              command:
+              - /tmp/readiness.sh
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 15
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: var-run
+              mountPath: /var/run/mysqld
+            - name: mycnfd
+              mountPath: /etc/mysql/conf.d
+            - name: mariadb-bin
+              mountPath: /tmp/start.py
+              subPath: start.py
+              readOnly: true
+            - name: mariadb-bin
+              mountPath: /tmp/stop.sh
+              subPath: stop.sh
+              readOnly: true
+            - name: mariadb-bin
+              mountPath: /tmp/readiness.sh
+              subPath: readiness.sh
+              readOnly: true
+            - name: mariadb-etc
+              mountPath: /etc/mysql/my.cnf
+              subPath: my.cnf
+              readOnly: true
+            - name: mariadb-etc
+              mountPath: /etc/mysql/conf.d/00-base.cnf
+              subPath: 00-base.cnf
+              readOnly: true
+            - name: mariadb-etc
+              mountPath: /etc/mysql/conf.d/99-force.cnf
+              subPath: 99-force.cnf
+              readOnly: true
+            - name: mariadb-secrets
+              mountPath: /etc/mysql/admin_user.cnf
+              subPath: admin_user.cnf
+              readOnly: true
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: mycnfd
+          emptyDir: {}
+        - name: var-run
+          emptyDir: {}
+        - name: mariadb-bin
+          configMap:
+            name: mariadb-bin
+            defaultMode: 0555
+        - name: mariadb-etc
+          configMap:
+            name: mariadb-etc
+            defaultMode: 0444
+        - name: mariadb-secrets
+          secret:
+            secretName: mariadb-secrets
+            defaultMode: 0444
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 40Gi
+      storageClassName: rbd
+

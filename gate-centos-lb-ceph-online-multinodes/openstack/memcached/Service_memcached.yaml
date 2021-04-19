@@ -1,0 +1,15 @@
+
+# Source: memcached/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: memcached
+spec:
+  sessionAffinity: ClientIP
+  ports:
+    - port: 11211
+  selector:
+    release_group: memcached
+    application: memcached
+    component: server
+

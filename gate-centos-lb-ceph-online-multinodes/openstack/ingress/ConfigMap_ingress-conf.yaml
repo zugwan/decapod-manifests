@@ -1,0 +1,12 @@
+
+# Source: ingress/templates/configmap-conf.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-conf
+data:
+  bind-address: 0.0.0.0
+  enable-underscores-in-headers: "true"
+  enable-vts-status: "true"
+  server-tokens: "false"
+

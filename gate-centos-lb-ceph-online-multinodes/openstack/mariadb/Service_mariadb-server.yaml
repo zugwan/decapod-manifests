@@ -1,0 +1,15 @@
+
+# Source: mariadb/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-server
+spec:
+  ports:
+    - name: mysql
+      port: 3306
+  selector:
+    release_group: mariadb
+    application: mariadb
+    component: server
+

@@ -1,0 +1,17 @@
+
+# Source: keystone/templates/job-fernet-setup.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: keystone-fernet-setup
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - create
+      - update
+

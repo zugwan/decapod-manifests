@@ -1,0 +1,16 @@
+
+# Source: nova/templates/job-rabbit-init.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nova-nova-rabbit-init
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: nova-openstack-nova-rabbit-init
+subjects:
+  - kind: ServiceAccount
+    name: nova-rabbit-init
+    namespace: openstack
+

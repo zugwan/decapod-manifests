@@ -1,0 +1,24 @@
+
+# Source: rabbitmq/templates/configmap-etc.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "rabbitmq-rabbitmq-etc"
+data:
+  enabled_plugins: |
+    
+    
+    [rabbitmq_management,rabbitmq_peer_discovery_k8s].
+    
+  rabbitmq.conf: |
+    cluster_formation.k8s.address_type = hostname
+    cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+    cluster_formation.node_cleanup.interval = 10
+    cluster_formation.node_cleanup.only_log_warning = true
+    cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
+    cluster_partition_handling = autoheal
+    listeners.tcp.1 = 0.0.0.0:5672
+    loopback_users.guest = false
+    management.load_definitions = /var/lib/rabbitmq/definitions.json
+    queue_master_locator = min-masters
+

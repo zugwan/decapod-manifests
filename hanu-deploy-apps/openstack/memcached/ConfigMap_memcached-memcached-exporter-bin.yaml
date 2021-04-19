@@ -1,0 +1,25 @@
+
+# Source: memcached/templates/monitoring/prometheus/exporter-configmap-bin.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  "memcached-memcached-exporter-bin"
+data:
+  memcached-exporter.sh: |
+    #!/bin/sh
+    
+    
+    
+    set -ex
+    COMMAND="${@:-start}"
+    
+    function start () {
+      exec /bin/memcached_exporter --memcached.address "$MEMCACHED_HOST"
+    }
+    
+    function stop () {
+      kill -TERM 1
+    }
+    
+    $COMMAND
+

@@ -1,0 +1,16 @@
+
+# Source: keystone/templates/job-domain-manage.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keystone-keystone-domain-manage
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-domain-manage
+subjects:
+  - kind: ServiceAccount
+    name: keystone-domain-manage
+    namespace: openstack
+

@@ -1,0 +1,16 @@
+
+# Source: rabbitmq/templates/job-cluster-wait.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: rabbitmq-rabbitmq-cluster-wait
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rabbitmq-openstack-rabbitmq-cluster-wait
+subjects:
+  - kind: ServiceAccount
+    name: rabbitmq-cluster-wait
+    namespace: openstack
+

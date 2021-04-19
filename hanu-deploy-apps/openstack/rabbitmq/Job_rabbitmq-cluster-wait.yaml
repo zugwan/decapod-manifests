@@ -1,0 +1,124 @@
+
+# Source: rabbitmq/templates/job-cluster-wait.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "rabbitmq-cluster-wait"
+  labels:
+    release_group: rabbitmq
+    application: rabbitmq
+    component: cluster-wait
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+spec:
+  template:
+    metadata:
+      labels:
+        release_group: rabbitmq
+        application: rabbitmq
+        component: cluster-wait
+    spec:
+      securityContext:
+        runAsUser: 999
+      serviceAccountName: rabbitmq-cluster-wait
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: "enabled"
+      initContainers:
+        
+        - name: init
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:rabbitmq"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+        - name: rabbitmq-cookie
+          image: "deploy001:5000/rabbitmq:3.7.13-management"
+          imagePullPolicy: IfNotPresent
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          command:
+            - /tmp/rabbitmq-cookie.sh
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: rabbitmq-bin
+              mountPath: /tmp/rabbitmq-cookie.sh
+              subPath: rabbitmq-cookie.sh
+              readOnly: true
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+            - name: rabbitmq-erlang-cookie
+              mountPath: /var/run/lib/rabbitmq/.erlang.cookie
+              subPath: erlang_cookie
+              readOnly: true
+      containers:
+        - name: rabbitmq-rabbitmq-cluster-wait
+          image: "deploy001:5000/rabbitmq:3.7.13-management"
+          imagePullPolicy: IfNotPresent
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          env:
+            - name: RABBITMQ_ADMIN_CONNECTION
+              value: "rabbit://rabbitmq:password@rabbitmq.openstack.svc.cluster.local:15672/"
+            - name: RABBIT_REPLICA_COUNT
+              value: "3"
+          command:
+            - /tmp/rabbitmq-wait-for-cluster.sh
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: rabbitmq-bin
+              mountPath: /tmp/rabbitmq-wait-for-cluster.sh
+              subPath: rabbitmq-wait-for-cluster.sh
+              readOnly: true
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: rabbitmq-data
+          emptyDir: {}
+        - name: rabbitmq-bin
+          configMap:
+            name: "rabbitmq-rabbitmq-bin"
+            defaultMode: 0555
+        - name: rabbitmq-erlang-cookie
+          secret:
+            secretName: "rabbitmq-erlang-cookie"
+            defaultMode: 0444
+

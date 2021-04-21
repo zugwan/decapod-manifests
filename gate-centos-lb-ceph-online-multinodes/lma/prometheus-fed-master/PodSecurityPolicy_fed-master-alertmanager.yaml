@@ -1,4 +1,4 @@
-
+---
 # Source: kube-prometheus-stack/templates/alertmanager/psp.yaml
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
@@ -48,4 +48,3 @@ spec:
       - min: 0
         max: 65535
   readOnlyRootFilesystem: false
-

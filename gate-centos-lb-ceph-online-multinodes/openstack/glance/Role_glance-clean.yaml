@@ -1,4 +1,3 @@
-
 # Source: glance/templates/job-clean.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
@@ -12,4 +11,3 @@ rules:
     verbs:
       - get
       - delete
-

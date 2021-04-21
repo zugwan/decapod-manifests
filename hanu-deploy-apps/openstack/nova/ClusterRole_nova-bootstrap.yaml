@@ -1,4 +1,3 @@
-
 # Source: nova/templates/job-bootstrap.yaml
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -12,4 +11,3 @@ rules:
     verbs:
       - get
       - list
-

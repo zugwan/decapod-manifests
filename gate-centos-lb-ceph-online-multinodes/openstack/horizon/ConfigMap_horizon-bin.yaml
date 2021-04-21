@@ -1,4 +1,3 @@
-
 # Source: horizon/templates/configmap-bin.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -474,4 +473,3 @@ data:
         sys.exit(1)
     
     browser.quit()
-

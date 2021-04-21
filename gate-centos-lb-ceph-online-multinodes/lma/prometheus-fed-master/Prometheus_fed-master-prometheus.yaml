@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/prometheus/prometheus.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
@@ -68,4 +67,3 @@ spec:
             storage: 500Gi
         storageClassName: ceph
   portName: web
-

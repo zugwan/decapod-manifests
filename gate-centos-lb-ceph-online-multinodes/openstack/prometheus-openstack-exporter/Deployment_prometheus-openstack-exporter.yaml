@@ -1,4 +1,3 @@
-
 # Source: prometheus-openstack-exporter/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -198,4 +197,3 @@ spec:
           configMap:
             name: prometheus-openstack-exporter-bin
             defaultMode: 0555
-

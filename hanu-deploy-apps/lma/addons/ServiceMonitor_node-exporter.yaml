@@ -1,4 +1,3 @@
-
 # Source: lma-addons/templates/service-monitor/node-exporter.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -16,4 +15,3 @@ spec:
   endpoints:
   - port: metrics
     interval: 10s
-

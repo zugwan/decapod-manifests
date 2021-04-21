@@ -1,11 +1,10 @@
-
 # Source: ironic/templates/job-db-init.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: "ironic-db-init"
 spec:
-  backoffLimit: 1000
+  backoffLimit: 6
   template:
     metadata:
       labels:
@@ -107,4 +106,3 @@ spec:
           secret:
             secretName: "ironic-etc"
             defaultMode: 0444
-

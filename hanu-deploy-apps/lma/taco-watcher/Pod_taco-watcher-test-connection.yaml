@@ -1,4 +1,3 @@
-
 # Source: taco-watcher/templates/tests/test-connection.yaml
 apiVersion: v1
 kind: Pod

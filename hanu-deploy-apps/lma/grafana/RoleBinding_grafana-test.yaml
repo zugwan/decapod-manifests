@@ -1,4 +1,3 @@
-
 # Source: grafana/templates/tests/test-rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -19,4 +18,3 @@ subjects:
 - kind: ServiceAccount
   name: grafana-test
   namespace: fed
-

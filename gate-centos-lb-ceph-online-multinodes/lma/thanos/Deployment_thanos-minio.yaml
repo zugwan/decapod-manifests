@@ -1,4 +1,3 @@
-
 # Source: thanos/charts/minio/templates/deployment-standalone.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -105,4 +104,3 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: thanos-minio
-

@@ -1,4 +1,3 @@
-
 # Source: prometheus-pushgateway/templates/service.yaml
 apiVersion: v1
 kind: Service
@@ -22,4 +21,3 @@ spec:
   selector:
     app: prometheus-pushgateway
     release: prometheus-pushgateway
-

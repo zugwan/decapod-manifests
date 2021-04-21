@@ -1,4 +1,3 @@
-
 # Source: glance/templates/job-metadefs-load.yaml
 apiVersion: batch/v1
 kind: Job
@@ -102,4 +101,3 @@ spec:
           secret:
             secretName: glance-etc
             defaultMode: 0444
-

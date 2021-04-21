@@ -1,4 +1,3 @@
-
 # Source: neutron/templates/job-ks-service.yaml
 apiVersion: batch/v1
 kind: Job
@@ -138,4 +137,3 @@ spec:
           configMap:
             name: "neutron-bin"
             defaultMode: 0555
-

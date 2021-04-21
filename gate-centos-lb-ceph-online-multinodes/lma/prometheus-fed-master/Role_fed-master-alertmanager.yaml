@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/alertmanager/psp-role.yaml
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -17,4 +16,3 @@ rules:
   verbs:     ['use']
   resourceNames:
   - fed-master-alertmanager
-

@@ -1,4 +1,3 @@
-
 # Source: ironic/templates/configmap-bin.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -118,13 +117,6 @@ data:
         logger.critical('environment variable ROOT_DB_CONNECTION not set')
         sys.exit(1)
     
-    mysql_x509 = os.getenv('MARIADB_X509', "")
-    ssl_args = {}
-    if mysql_x509:
-        ssl_args = {'ssl': {'ca': '/etc/mysql/certs/ca.crt',
-                            'key': '/etc/mysql/certs/tls.key',
-                            'cert': '/etc/mysql/certs/tls.crt'}}
-    
     # Get the connection string for the service db
     if "OPENSTACK_CONFIG_FILE" in os.environ:
         os_conf = os.environ['OPENSTACK_CONFIG_FILE']
@@ -165,7 +157,7 @@ data:
         host = root_engine_full.url.host
         port = root_engine_full.url.port
         root_engine_url = ''.join([drivername, '://', root_user, ':', root_password, '@', host, ':', str (port)])
-        root_engine = create_engine(root_engine_url, connect_args=ssl_args)
+        root_engine = create_engine(root_engine_url)
         connection = root_engine.connect()
         connection.close()
         logger.info("Tested connection to DB @ {0}:{1} as {2}".format(
@@ -176,7 +168,7 @@ data:
     
     # User DB engine
     try:
-        user_engine = create_engine(user_db_conn, connect_args=ssl_args)
+        user_engine = create_engine(user_db_conn)
         # Get our user data out of the user_engine
         database = user_engine.url.database
         user = user_engine.url.username
@@ -245,13 +237,6 @@ data:
         logger.critical('environment variable ROOT_DB_CONNECTION not set')
         sys.exit(1)
     
-    mysql_x509 = os.getenv('MARIADB_X509', "")
-    ssl_args = {}
-    if mysql_x509:
-        ssl_args = {'ssl': {'ca': '/etc/mysql/certs/ca.crt',
-                    'key': '/etc/mysql/certs/tls.key',
-                    'cert': '/etc/mysql/certs/tls.crt'}}
-    
     # Get the connection string for the service db
     if "OPENSTACK_CONFIG_FILE" in os.environ:
         os_conf = os.environ['OPENSTACK_CONFIG_FILE']
@@ -292,7 +277,7 @@ data:
         host = root_engine_full.url.host
         port = root_engine_full.url.port
         root_engine_url = ''.join([drivername, '://', root_user, ':', root_password, '@', host, ':', str (port)])
-        root_engine = create_engine(root_engine_url, connect_args=ssl_args)
+        root_engine = create_engine(root_engine_url)
         connection = root_engine.connect()
         connection.close()
         logger.info("Tested connection to DB @ {0}:{1} as {2}".format(
@@ -303,7 +288,7 @@ data:
     
     # User DB engine
     try:
-        user_engine = create_engine(user_db_conn, connect_args=ssl_args)
+        user_engine = create_engine(user_db_conn)
         # Get our user data out of the user_engine
         database = user_engine.url.database
         user = user_engine.url.username
@@ -324,8 +309,8 @@ data:
     # Create DB User
     try:
         root_engine.execute(
-            "GRANT ALL ON `{0}`.* TO \'{1}\'@\'%%\' IDENTIFIED BY \'{2}\' {3}".format(
-                database, user, password, mysql_x509))
+            "GRANT ALL ON `{0}`.* TO \'{1}\'@\'%%\' IDENTIFIED BY \'{2}\'".format(
+                database, user, password))
         logger.info("Created user {0} for {1}".format(user, database))
     except:
         logger.critical("Could not create user {0} for {1}".format(user, database))
@@ -470,25 +455,13 @@ data:
     
     set -ex
     
-    if [[ "${SERVICE_OS_PROJECT_DOMAIN_NAME}" == "Default" ]]
-    then
-      PROJECT_DOMAIN_ID="default"
-    else
-      # Manage project domain
-      PROJECT_DOMAIN_ID=$(openstack domain create --or-show --enable -f value -c id \
+    # Manage project domain
+    PROJECT_DOMAIN_ID=$(openstack domain create --or-show --enable -f value -c id \
         --description="Domain for ${SERVICE_OS_REGION_NAME}/${SERVICE_OS_PROJECT_DOMAIN_NAME}" \
         "${SERVICE_OS_PROJECT_DOMAIN_NAME}")
-    fi
     
-    if [[ "${SERVICE_OS_USER_DOMAIN_NAME}" == "Default" ]]
-    then
-      USER_DOMAIN_ID="default"
-    else
-      # Manage user domain
-      USER_DOMAIN_ID=$(openstack domain create --or-show --enable -f value -c id \
-        --description="Domain for ${SERVICE_OS_REGION_NAME}/${SERVICE_OS_USER_DOMAIN_NAME}" \
-        "${SERVICE_OS_USER_DOMAIN_NAME}")
-    fi
+    # Display project domain
+    openstack domain show "${PROJECT_DOMAIN_ID}"
     
     # Manage user project
     USER_PROJECT_DESC="Service Project for ${SERVICE_OS_REGION_NAME}/${SERVICE_OS_PROJECT_DOMAIN_NAME}"
@@ -496,6 +469,17 @@ data:
         --domain="${PROJECT_DOMAIN_ID}" \
         --description="${USER_PROJECT_DESC}" \
         "${SERVICE_OS_PROJECT_NAME}");
+    
+    # Display project
+    openstack project show "${USER_PROJECT_ID}"
+    
+    # Manage user domain
+    USER_DOMAIN_ID=$(openstack domain create --or-show --enable -f value -c id \
+        --description="Domain for ${SERVICE_OS_REGION_NAME}/${SERVICE_OS_USER_DOMAIN_NAME}" \
+        "${SERVICE_OS_USER_DOMAIN_NAME}")
+    
+    # Display user domain
+    openstack domain show "${USER_DOMAIN_ID}"
     
     # Manage user
     USER_DESC="Service User for ${SERVICE_OS_REGION_NAME}/${SERVICE_OS_USER_DOMAIN_NAME}/${SERVICE_OS_SERVICE_NAME}"
@@ -512,13 +496,13 @@ data:
     openstack user set --password="${SERVICE_OS_PASSWORD}" "${USER_ID}"
     set -x
     
+    # Display user
+    openstack user show "${USER_ID}"
+    
     function ks_assign_user_role () {
-      if [[ "$SERVICE_OS_ROLE" == "admin" ]]
-      then
-        USER_ROLE_ID="$SERVICE_OS_ROLE"
-      else
-        USER_ROLE_ID=$(openstack role create --or-show -f value -c id "${SERVICE_OS_ROLE}");
-      fi
+      # Get user role
+      USER_ROLE_ID=$(openstack role create --or-show -f value -c id \
+          "${SERVICE_OS_ROLE}");
     
       # Manage user role assignment
       openstack role add \
@@ -527,6 +511,12 @@ data:
           --project-domain="${PROJECT_DOMAIN_ID}" \
           --project="${USER_PROJECT_ID}" \
           "${USER_ROLE_ID}"
+    
+      # Display user role assignment
+      openstack role assignment list \
+          --role="${USER_ROLE_ID}" \
+          --user-domain="${USER_DOMAIN_ID}" \
+          --user="${USER_ID}"
     }
     
     # Manage user service role
@@ -812,4 +802,3 @@ data:
       echo "${RABBITMQ_AUXILIARY_CONFIGURATION}" > /tmp/rmq_definitions.json
       rabbitmqadmin_cli import /tmp/rmq_definitions.json
     fi
-

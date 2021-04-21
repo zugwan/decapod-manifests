@@ -1,4 +1,3 @@
-
 # Source: rabbitmq/templates/job-cluster-wait.yaml
 apiVersion: batch/v1
 kind: Job
@@ -121,4 +120,3 @@ spec:
           secret:
             secretName: "rabbitmq-erlang-cookie"
             defaultMode: 0444
-

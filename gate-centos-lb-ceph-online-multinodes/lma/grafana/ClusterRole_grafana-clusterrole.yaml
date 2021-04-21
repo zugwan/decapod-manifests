@@ -1,4 +1,3 @@
-
 # Source: grafana/templates/clusterrole.yaml
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -14,4 +13,3 @@ rules:
 - apiGroups: [""] # "" indicates the core API group
   resources: ["configmaps", "secrets"]
   verbs: ["get", "watch", "list"]
-

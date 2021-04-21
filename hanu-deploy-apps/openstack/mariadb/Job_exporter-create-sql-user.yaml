@@ -1,4 +1,3 @@
-
 # Source: mariadb/templates/monitoring/prometheus/exporter-job-create-user.yaml
 apiVersion: batch/v1
 kind: Job
@@ -103,4 +102,3 @@ spec:
           secret:
             secretName: mariadb-secrets
             defaultMode: 0444
-

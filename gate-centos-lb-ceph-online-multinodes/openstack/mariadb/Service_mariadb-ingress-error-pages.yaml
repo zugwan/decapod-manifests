@@ -1,4 +1,3 @@
-
 # Source: mariadb/templates/service-error.yaml
 apiVersion: v1
 kind: Service
@@ -18,4 +17,3 @@ spec:
     release_group: mariadb
     application: mariadb
     component: ingress-error-pages
-

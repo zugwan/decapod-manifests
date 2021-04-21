@@ -1,4 +1,3 @@
-
 # Source: memcached/templates/monitoring/prometheus/exporter-service.yaml
 apiVersion: v1
 kind: Service
@@ -19,4 +18,3 @@ spec:
     release_group: memcached
     application: prometheus_memcached_exporter
     component: exporter
-

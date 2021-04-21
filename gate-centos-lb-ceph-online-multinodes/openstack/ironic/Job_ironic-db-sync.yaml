@@ -1,11 +1,10 @@
-
 # Source: ironic/templates/job-db-sync.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: "ironic-db-sync"
 spec:
-  backoffLimit: 1000
+  backoffLimit: 6
   template:
     metadata:
       labels:
@@ -84,7 +83,7 @@ spec:
             - name: db-sync-conf
               mountPath: "/etc/ironic/logging.conf"
               subPath: "logging.conf"
-              readOnly: true            
+              readOnly: true
       volumes:
         - name: pod-tmp
           emptyDir: {}
@@ -98,4 +97,3 @@ spec:
           secret:
             secretName: "ironic-etc"
             defaultMode: 0444
-

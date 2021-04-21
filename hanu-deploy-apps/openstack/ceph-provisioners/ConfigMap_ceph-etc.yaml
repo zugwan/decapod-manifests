@@ -1,4 +1,4 @@
-
+---
 # Source: ceph-provisioners/templates/configmap-etc-client.yaml
 apiVersion: v1
 kind: ConfigMap

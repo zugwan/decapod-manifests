@@ -1,11 +1,10 @@
-
 # Source: ironic/templates/job-rabbit-init.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: "ironic-rabbit-init"
 spec:
-  backoffLimit: 1000
+  backoffLimit: 6
   template:
     metadata:
       labels:
@@ -91,4 +90,3 @@ spec:
           configMap:
             name: "ironic-bin"
             defaultMode: 0555
-

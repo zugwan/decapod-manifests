@@ -1,4 +1,3 @@
-
 # Source: glance/templates/job-storage-init.yaml
 apiVersion: batch/v1
 kind: Job
@@ -136,4 +135,3 @@ spec:
           configMap:
             name: ceph-etc
             defaultMode: 0444
-

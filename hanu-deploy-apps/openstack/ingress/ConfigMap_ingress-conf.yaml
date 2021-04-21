@@ -1,4 +1,3 @@
-
 # Source: ingress/templates/configmap-conf.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -9,4 +8,3 @@ data:
   enable-underscores-in-headers: "true"
   enable-vts-status: "true"
   server-tokens: "false"
-

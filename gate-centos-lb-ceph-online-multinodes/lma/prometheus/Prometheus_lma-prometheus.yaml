@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/prometheus/prometheus.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
@@ -75,4 +74,3 @@ spec:
       name: taco-objstore-secret
     version: v0.18.0
   portName: web
-

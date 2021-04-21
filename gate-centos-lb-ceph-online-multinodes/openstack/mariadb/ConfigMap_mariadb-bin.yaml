@@ -1,4 +1,3 @@
-
 # Source: mariadb/templates/configmap-bin.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -1329,4 +1328,3 @@ data:
       usage
       exit
     fi
-

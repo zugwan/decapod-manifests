@@ -1,4 +1,3 @@
-
 # Source: nova/templates/job-ks-placement-service.yaml
 apiVersion: batch/v1
 kind: Job
@@ -138,4 +137,3 @@ spec:
           configMap:
             name: "nova-bin"
             defaultMode: 0555
-

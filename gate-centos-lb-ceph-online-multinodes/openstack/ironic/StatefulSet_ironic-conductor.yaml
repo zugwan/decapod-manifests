@@ -1,4 +1,3 @@
-
 # Source: ironic/templates/statefulset-conductor.yaml
 apiVersion: apps/v1
 kind: StatefulSet
@@ -169,11 +168,6 @@ spec:
                   name: ironic-keystone-user
                   key: OS_REGION_NAME
             - name: OS_INTERFACE
-              valueFrom:
-                secretKeyRef:
-                  name: ironic-keystone-user
-                  key: OS_INTERFACE
-            - name: OS_ENDPOINT_TYPE
               valueFrom:
                 secretKeyRef:
                   name: ironic-keystone-user
@@ -353,4 +347,3 @@ spec:
             path: /sys
         - name: pod-data
           emptyDir: {}
-

@@ -1,4 +1,3 @@
-
 # Source: kiali-operator/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -78,4 +77,3 @@ spec:
       affinity:
         {}
 ...
-

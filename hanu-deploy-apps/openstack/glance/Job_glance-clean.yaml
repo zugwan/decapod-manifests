@@ -1,4 +1,3 @@
-
 # Source: glance/templates/job-clean.yaml
 apiVersion: batch/v1
 kind: Job

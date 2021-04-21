@@ -1,11 +1,10 @@
-
 # Source: ironic/templates/job-ks-endpoints.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: "ironic-ks-endpoints"
 spec:
-  backoffLimit: 1000
+  backoffLimit: 6
   template:
     metadata:
       labels:
@@ -75,7 +74,6 @@ spec:
               mountPath: /tmp/ks-endpoints.sh
               subPath: ks-endpoints.sh
               readOnly: true
-            
           env:            
             - name: OS_IDENTITY_API_VERSION
               value: "3"
@@ -90,11 +88,6 @@ spec:
                   name: ironic-keystone-admin
                   key: OS_REGION_NAME
             - name: OS_INTERFACE
-              valueFrom:
-                secretKeyRef:
-                  name: ironic-keystone-admin
-                  key: OS_INTERFACE
-            - name: OS_ENDPOINT_TYPE
               valueFrom:
                 secretKeyRef:
                   name: ironic-keystone-admin
@@ -152,7 +145,6 @@ spec:
               mountPath: /tmp/ks-endpoints.sh
               subPath: ks-endpoints.sh
               readOnly: true
-            
           env:            
             - name: OS_IDENTITY_API_VERSION
               value: "3"
@@ -167,11 +159,6 @@ spec:
                   name: ironic-keystone-admin
                   key: OS_REGION_NAME
             - name: OS_INTERFACE
-              valueFrom:
-                secretKeyRef:
-                  name: ironic-keystone-admin
-                  key: OS_INTERFACE
-            - name: OS_ENDPOINT_TYPE
               valueFrom:
                 secretKeyRef:
                   name: ironic-keystone-admin
@@ -229,7 +216,6 @@ spec:
               mountPath: /tmp/ks-endpoints.sh
               subPath: ks-endpoints.sh
               readOnly: true
-            
           env:            
             - name: OS_IDENTITY_API_VERSION
               value: "3"
@@ -244,11 +230,6 @@ spec:
                   name: ironic-keystone-admin
                   key: OS_REGION_NAME
             - name: OS_INTERFACE
-              valueFrom:
-                secretKeyRef:
-                  name: ironic-keystone-admin
-                  key: OS_INTERFACE
-            - name: OS_ENDPOINT_TYPE
               valueFrom:
                 secretKeyRef:
                   name: ironic-keystone-admin
@@ -298,4 +279,3 @@ spec:
           configMap:
             name: "ironic-bin"
             defaultMode: 0555
-

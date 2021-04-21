@@ -1,4 +1,3 @@
-
 # Source: neutron/templates/job-db-sync.yaml
 apiVersion: batch/v1
 kind: Job
@@ -102,4 +101,3 @@ spec:
           secret:
             secretName: "neutron-etc"
             defaultMode: 0444
-

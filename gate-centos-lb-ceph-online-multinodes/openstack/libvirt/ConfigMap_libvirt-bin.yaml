@@ -1,4 +1,3 @@
-
 # Source: libvirt/templates/configmap-bin.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -186,4 +185,3 @@ data:
     EOF
     
     exit 0
-

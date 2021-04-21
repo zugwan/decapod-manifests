@@ -1,4 +1,3 @@
-
 # Source: rabbitmq/templates/monitoring/prometheus/exporter-service.yaml
 apiVersion: v1
 kind: Service
@@ -19,4 +18,3 @@ spec:
     release_group: rabbitmq
     application: prometheus_rabbitmq_exporter
     component: exporter
-

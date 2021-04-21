@@ -1,4 +1,3 @@
-
 # Source: taco-watcher/templates/pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -18,4 +17,3 @@ spec:
       storage: 100Mi 
     requests:
       storage: 100Mi
-

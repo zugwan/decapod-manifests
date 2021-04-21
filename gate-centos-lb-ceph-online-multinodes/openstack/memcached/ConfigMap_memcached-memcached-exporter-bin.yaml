@@ -1,4 +1,3 @@
-
 # Source: memcached/templates/monitoring/prometheus/exporter-configmap-bin.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -22,4 +21,3 @@ data:
     }
     
     $COMMAND
-

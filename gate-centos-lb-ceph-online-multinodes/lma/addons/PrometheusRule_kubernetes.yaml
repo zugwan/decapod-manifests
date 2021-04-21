@@ -1,4 +1,3 @@
-
 # Source: lma-addons/templates/prometheus-rule/kubernetes.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -84,4 +83,3 @@ spec:
       labels:
         workload_type: statefulset
       record: mixin_pod_workload
-

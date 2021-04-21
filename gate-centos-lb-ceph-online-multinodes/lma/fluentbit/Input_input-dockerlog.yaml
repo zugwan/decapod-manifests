@@ -1,0 +1,18 @@
+# Source: fluentbit-operator/templates/fluentbit/inputs.yaml
+apiVersion: logging.kubesphere.io/v1alpha2
+kind: Input
+metadata:
+  name: input-dockerlog
+  namespace: lma
+  labels:
+    logging.kubesphere.io/enabled: "true"
+    app.kubernetes.io/version: v0.0.1
+spec:
+  tail: 
+    db: /fluent-bit/tail
+    bufferChunkSize: 2M
+    bufferMaxSize: 5M
+    memBufLimit: 20MB
+    parser: docker
+    path: /var/log/containers/*.log
+    tag: "kube.*"

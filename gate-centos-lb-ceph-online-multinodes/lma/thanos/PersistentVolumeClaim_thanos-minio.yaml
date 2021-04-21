@@ -1,4 +1,3 @@
-
 # Source: thanos/charts/minio/templates/pvc-standalone.yaml
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -17,4 +16,3 @@ spec:
     requests:
       storage: "8Gi"
   storageClassName: ceph
-

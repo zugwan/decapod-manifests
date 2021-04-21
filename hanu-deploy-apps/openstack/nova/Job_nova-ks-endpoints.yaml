@@ -1,4 +1,3 @@
-
 # Source: nova/templates/job-ks-endpoints.yaml
 apiVersion: batch/v1
 kind: Job
@@ -298,4 +297,3 @@ spec:
           configMap:
             name: "nova-bin"
             defaultMode: 0555
-

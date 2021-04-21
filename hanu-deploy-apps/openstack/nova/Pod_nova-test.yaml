@@ -1,4 +1,3 @@
-
 # Source: nova/templates/pod-rally-test.yaml
 apiVersion: v1
 kind: Pod

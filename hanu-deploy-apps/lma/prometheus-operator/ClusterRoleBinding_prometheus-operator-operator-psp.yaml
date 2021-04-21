@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/prometheus-operator/psp-clusterrolebinding.yaml
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -18,4 +17,3 @@ subjects:
   - kind: ServiceAccount
     name: prometheus-operator-operator
     namespace: lma
-

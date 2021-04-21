@@ -1,0 +1,114 @@
+# Source: fluentbit-operator/templates/fluentbit/job-es-template.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fluentbit-operator-es-template
+  namespace: lma
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    app: fluentbit-operator-operator
+    
+    chart: fluentbit-operator-1.0.10
+    release: "fluentbit"
+    heritage: "Helm"
+spec:
+  template:
+    metadata:
+      name: fluentbit-operator-es-template
+      labels:
+        app: fluentbit-operator-operator
+        
+        chart: fluentbit-operator-1.0.10
+        release: "fluentbit"
+        heritage: "Helm"
+    spec:
+      nodeSelector:
+        taco-lma: enabled
+      containers:
+      - name: template
+        image: "docker.io/openstackhelm/heat:newton"
+        imagePullPolicy: "IfNotPresent"
+        env:
+          - name: ES_URL
+            value: https://eck-elasticsearch-es-http.lma.svc.cluster.local:9200
+          - name: ES_USER
+            value: elastic
+          - name: ES_PW
+            value: tacoword
+        command:
+        - /bin/sh
+        - -c
+        - /tmp/create_template.sh
+        volumeMounts:
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/create_template.sh
+          subPath: create_template.sh
+          readOnly: true
+        
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/template-platform.json
+          subPath: template-platform.json
+          readOnly: true
+        
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/template-application.json
+          subPath: template-application.json
+          readOnly: true
+        
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/template-syslog.json
+          subPath: template-syslog.json
+          readOnly: true
+        
+        
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/ilm-hot-delete-14days.json
+          subPath: ilm-hot-delete-14days.json
+          readOnly: true
+        
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/ilm-hot-delete-7days.json
+          subPath: ilm-hot-delete-7days.json
+          readOnly: true
+        
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/ilm-hot-delete-3hour.json
+          subPath: ilm-hot-delete-3hour.json
+          readOnly: true
+        
+        
+        
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/index-container.json
+          subPath: index-container.json
+          readOnly: true
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/index-platform.json
+          subPath: index-platform.json
+          readOnly: true
+        
+        
+        
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/index-syslog.json
+          subPath: index-syslog.json
+          readOnly: true
+        
+        
+        
+        - name: fluentbit-operator-cr-cm
+          mountPath: /tmp/index-syslog.json
+          subPath: index-syslog.json
+          readOnly: true
+        
+        
+      volumes:
+      - name: fluentbit-operator-cr-cm
+        configMap:
+          name: fluentbit-operator-cr-cm
+          defaultMode: 365
+      restartPolicy: OnFailure
+

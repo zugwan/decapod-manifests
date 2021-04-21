@@ -1,4 +1,4 @@
-
+---
 # Source: lma-addons/templates/service-monitor/calico-exporter-svc.yaml
 apiVersion: v1
 kind: Service
@@ -19,4 +19,3 @@ spec:
     k8s-app: calico-node
   sessionAffinity: None
   type: ClusterIP
-

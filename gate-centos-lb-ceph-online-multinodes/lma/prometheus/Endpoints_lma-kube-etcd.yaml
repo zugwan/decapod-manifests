@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/exporters/kube-etcd/endpoints.yaml
 apiVersion: v1
 kind: Endpoints
@@ -19,4 +18,3 @@ subsets:
       - name: http-metrics
         port: 2379
         protocol: TCP
-

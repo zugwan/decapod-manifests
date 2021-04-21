@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/prometheus-operator/servicemonitor.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -30,4 +29,3 @@ spec:
   namespaceSelector:
     matchNames:
       - "lma"
-

@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/prometheus-operator/admission-webhooks/validatingWebhookConfiguration.yaml
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -29,4 +28,3 @@ webhooks:
         path: /admission-prometheusrules/validate
     admissionReviewVersions: ["v1", "v1beta1"]
     sideEffects: None
-

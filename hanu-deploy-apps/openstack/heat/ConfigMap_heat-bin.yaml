@@ -1,4 +1,3 @@
-
 # Source: heat/templates/configmap-bin.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -826,4 +825,3 @@ data:
       echo "${RABBITMQ_AUXILIARY_CONFIGURATION}" > /tmp/rmq_definitions.json
       rabbitmqadmin_cli import /tmp/rmq_definitions.json
     fi
-

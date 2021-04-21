@@ -1,4 +1,3 @@
-
 # Source: rabbitmq/templates/configmap-etc.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -21,4 +20,3 @@ data:
     loopback_users.guest = false
     management.load_definitions = /var/lib/rabbitmq/definitions.json
     queue_master_locator = min-masters
-

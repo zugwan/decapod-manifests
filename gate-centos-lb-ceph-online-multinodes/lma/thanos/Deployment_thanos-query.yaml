@@ -1,4 +1,3 @@
-
 # Source: thanos/templates/query/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -89,4 +88,3 @@ spec:
             requests: {}
           volumeMounts:
       volumes:
-

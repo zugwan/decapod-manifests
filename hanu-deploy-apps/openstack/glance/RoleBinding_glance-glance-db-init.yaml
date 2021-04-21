@@ -1,4 +1,3 @@
-
 # Source: glance/templates/job-db-init.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -13,4 +12,3 @@ subjects:
   - kind: ServiceAccount
     name: glance-db-init
     namespace: openstack
-

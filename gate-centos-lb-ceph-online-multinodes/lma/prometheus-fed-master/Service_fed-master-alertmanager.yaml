@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/alertmanager/service.yaml
 apiVersion: v1
 kind: Service
@@ -22,4 +21,3 @@ spec:
     app: alertmanager
     alertmanager: fed-master-alertmanager
   type: "ClusterIP"
-

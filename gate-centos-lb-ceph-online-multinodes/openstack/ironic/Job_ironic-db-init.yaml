@@ -4,7 +4,7 @@ kind: Job
 metadata:
   name: "ironic-db-init"
 spec:
-  backoffLimit: 1000
+  backoffLimit: 6
   template:
     metadata:
       labels:

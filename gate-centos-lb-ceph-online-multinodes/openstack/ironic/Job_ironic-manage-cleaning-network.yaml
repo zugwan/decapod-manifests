@@ -78,11 +78,6 @@ spec:
                 secretKeyRef:
                   name: ironic-keystone-user
                   key: OS_INTERFACE
-            - name: OS_ENDPOINT_TYPE
-              valueFrom:
-                secretKeyRef:
-                  name: ironic-keystone-user
-                  key: OS_INTERFACE
             - name: OS_PROJECT_DOMAIN_NAME
               valueFrom:
                 secretKeyRef:

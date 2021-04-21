@@ -30,8 +30,8 @@ spec:
         component: api
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
-        configmap-bin-hash: "49603a19725fbe98889c3f69a873769aeeedab1921f56f5006b2587d525f5578"
-        configmap-etc-hash: "e97e06ae287641288b1af81d720e2fd54a0b53f6c1fe971292346c7059473765"
+        configmap-bin-hash: "b5523a4bdbb1495d25171c6656a18a5e927c23ba7fb3e63cbb00a0ab5c321f55"
+        configmap-etc-hash: "1f039af699ab3fbd683310956e0de14dae475f16da18272ca5e67b9fbcb3d442"
     spec:
       serviceAccountName: ironic-api
       affinity:
@@ -116,11 +116,6 @@ spec:
                   name: ironic-keystone-user
                   key: OS_REGION_NAME
             - name: OS_INTERFACE
-              valueFrom:
-                secretKeyRef:
-                  name: ironic-keystone-user
-                  key: OS_INTERFACE
-            - name: OS_ENDPOINT_TYPE
               valueFrom:
                 secretKeyRef:
                   name: ironic-keystone-user

@@ -1,4 +1,3 @@
-
 # Source: grafana/templates/tests/test-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -19,4 +18,3 @@ data:
       code=$(wget --server-response --spider --timeout 10 --tries 1 ${url} 2>&1 | awk '/^  HTTP/{print $2}')
       [ "$code" == "200" ]
     }
-

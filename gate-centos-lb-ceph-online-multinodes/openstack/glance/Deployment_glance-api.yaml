@@ -1,4 +1,3 @@
-
 # Source: glance/templates/deployment-api.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -32,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "bfd669e36a5fe8c2192d53955aced162284839aafdbe007e08ea81a588f10f8f"
-        configmap-etc-hash: "bad189ff1513a2f48e06247abb0374f6fd8a033f1bcec746408f34872e04d7e6"
+        configmap-etc-hash: "bfd982e380534895a926b9374474a2f0dae0ba9e1f3667ea37b1e81c110e1dae"
     spec:
       serviceAccountName: glance-api
       securityContext:
@@ -244,4 +243,3 @@ spec:
         - name: ceph-keyring
           secret:
             secretName: "images-rbd-keyring"
-

@@ -1,4 +1,3 @@
-
 # Source: horizon/templates/job-db-init.yaml
 apiVersion: batch/v1
 kind: Job
@@ -90,4 +89,3 @@ spec:
           configMap:
             name: "horizon-bin"
             defaultMode: 0555
-

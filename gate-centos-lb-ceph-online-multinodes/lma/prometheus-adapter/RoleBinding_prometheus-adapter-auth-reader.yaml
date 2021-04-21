@@ -1,4 +1,3 @@
-
 # Source: prometheus-adapter/templates/custom-metrics-apiserver-auth-reader-role-binding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -17,4 +16,3 @@ subjects:
 - kind: ServiceAccount
   name: prometheus-adapter
   namespace: "lma"
-

@@ -1,4 +1,3 @@
-
 # Source: libvirt/templates/daemonset-libvirt.yaml
 apiVersion: apps/v1
 kind: DaemonSet

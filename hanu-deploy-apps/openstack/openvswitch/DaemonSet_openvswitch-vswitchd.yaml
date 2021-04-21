@@ -1,4 +1,3 @@
-
 # Source: openvswitch/templates/daemonset-ovs-vswitchd.yaml
 apiVersion: apps/v1
 kind: DaemonSet

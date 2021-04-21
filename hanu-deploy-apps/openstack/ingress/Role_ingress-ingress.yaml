@@ -1,4 +1,3 @@
-
 # Source: ingress/templates/deployment-ingress.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
@@ -38,4 +37,3 @@ rules:
       - get
       - create
       - update
-

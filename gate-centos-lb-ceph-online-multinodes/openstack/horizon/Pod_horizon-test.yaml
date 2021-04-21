@@ -1,4 +1,3 @@
-
 # Source: horizon/templates/pod-helm-tests.yaml
 apiVersion: v1
 kind: Pod

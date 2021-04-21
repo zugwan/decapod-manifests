@@ -1,4 +1,3 @@
-
 # Source: ingress/templates/deployment-ingress.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -186,4 +185,3 @@ spec:
           configMap:
             name: ingress-bin
             defaultMode: 0555
-

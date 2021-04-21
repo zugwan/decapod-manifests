@@ -1,4 +1,3 @@
-
 # Source: rabbitmq/templates/pod-test.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -13,4 +12,3 @@ subjects:
   - kind: ServiceAccount
     name: rabbitmq-test
     namespace: openstack
-

@@ -1,4 +1,3 @@
-
 # Source: ingress/templates/deployment-ingress.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -52,4 +51,3 @@ rules:
       - ingresses/status
     verbs:
       - update
-

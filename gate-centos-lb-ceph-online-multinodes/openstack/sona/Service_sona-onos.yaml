@@ -1,4 +1,3 @@
-
 # Source: sona/templates/service-sona.yaml
 apiVersion: v1
 kind: Service
@@ -21,4 +20,3 @@ spec:
     release_group: sona
     application: sona
     component: onos
-

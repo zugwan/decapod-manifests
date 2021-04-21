@@ -1,4 +1,3 @@
-
 # Source: thanos/templates/bucketweb/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -93,4 +92,3 @@ spec:
         - name: objstore-config
           secret:
             secretName: thanos-objstore-secret
-

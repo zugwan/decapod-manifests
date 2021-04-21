@@ -1,0 +1,14 @@
+# Source: lma-addons/templates/metricbeat/cm-modules.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metricbeat-modules
+  labels:
+    k8s-app: metricbeat
+data:
+  additional-modules.yml: |-
+    - enabled: true
+      metricsets:
+      - event
+      module: kubernetes
+      period: 10s

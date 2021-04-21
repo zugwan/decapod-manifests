@@ -1,4 +1,3 @@
-
 # Source: kube-state-metrics/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment

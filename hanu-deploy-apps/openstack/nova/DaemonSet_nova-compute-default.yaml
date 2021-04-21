@@ -1,4 +1,3 @@
-
 # Source: nova/templates/daemonset-compute.yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -21,7 +20,7 @@ spec:
     metadata:
       annotations:
         configmap-bin-hash: 645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727
-        configmap-etc-hash: bba665f75b76cd68a7d21a8804e5e8a9eb787cbb6d5f2eec7cdb4ba888f2971c
+        configmap-etc-hash: 33abf8efa1d916974be14fb38b47eec84f32f8c07ca956e34165f5cb4ac5ecf6
         openstackhelm.openstack.org/release_uuid: ""
       labels:
         application: nova
@@ -316,4 +315,3 @@ spec:
     rollingUpdate:
       maxUnavailable: 1
     type: RollingUpdate
-

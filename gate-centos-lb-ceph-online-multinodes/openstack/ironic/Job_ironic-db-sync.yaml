@@ -1,4 +1,3 @@
-
 # Source: ironic/templates/job-db-sync.yaml
 apiVersion: batch/v1
 kind: Job
@@ -98,4 +97,3 @@ spec:
           secret:
             secretName: "ironic-etc"
             defaultMode: 0444
-

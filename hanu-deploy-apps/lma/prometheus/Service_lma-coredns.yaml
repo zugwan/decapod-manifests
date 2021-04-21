@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/exporters/core-dns/service.yaml
 apiVersion: v1
 kind: Service
@@ -21,4 +20,3 @@ spec:
       targetPort: 9153
   selector:
     k8s-app: kube-dns
-

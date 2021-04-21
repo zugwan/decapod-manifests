@@ -1,4 +1,3 @@
-
 # Source: taco-watcher/templates/service.yaml
 apiVersion: v1
 kind: Service
@@ -61,4 +60,3 @@ spec:
   selector:
     app.kubernetes.io/name: taco-watcher
     app.kubernetes.io/instance: taco-watcher
-

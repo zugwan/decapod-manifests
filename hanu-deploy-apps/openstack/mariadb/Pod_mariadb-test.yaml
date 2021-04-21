@@ -1,4 +1,3 @@
-
 # Source: mariadb/templates/pod-test.yaml
 apiVersion: v1
 kind: Pod

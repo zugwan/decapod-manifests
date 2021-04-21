@@ -1,4 +1,4 @@
-
+---
 # Source: taco-watcher/templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -174,4 +174,3 @@ data:
     INSERT INTO user VALUES ('taco', 'password');
     INSERT INTO default_menu VALUES (1, 0, 'Cluster Management', 1, '/setcluster', 'icon-setting');
     INSERT INTO default_menu VALUES (2, 0, 'Prometheus Rule', 2, '/prometheusrule', 'icon-alarm');
-

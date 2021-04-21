@@ -1,4 +1,3 @@
-
 # Source: sona/templates/statefulset-sona.yaml
 apiVersion: apps/v1
 kind: StatefulSet
@@ -169,4 +168,3 @@ spec:
             type: DirectoryOrCreate
       dnsPolicy: ClusterFirstWithHostNet
       restartPolicy: Always
-

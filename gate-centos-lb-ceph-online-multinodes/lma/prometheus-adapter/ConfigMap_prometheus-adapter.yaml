@@ -1,4 +1,3 @@
-
 # Source: prometheus-adapter/templates/custom-metrics-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -11,4 +10,3 @@ metadata:
     heritage: Helm
 data:
   config.yaml: |
-

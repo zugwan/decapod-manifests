@@ -1,4 +1,3 @@
-
 # Source: openvswitch/templates/daemonset-ovs-db.yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -153,4 +152,3 @@ spec:
         - name: run
           hostPath:
             path: /run/openvswitch
-

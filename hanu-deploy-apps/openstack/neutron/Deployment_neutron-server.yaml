@@ -1,4 +1,3 @@
-
 # Source: neutron/templates/deployment-server.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -32,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "5c7b05eb47e1f5bad4324b03a4e7646e24311e8c8f9be5116c41b3dbf18d8f3c"
-        configmap-etc-hash: "1be9e3fabda5bc423cff1479116a747e80ece390b04efc0aae6144797cc5c7e2"
+        configmap-etc-hash: "ad04c8b2a64fd269d615a5d420ceb31f38b914a1b562186d3fdaedd229f3edb9"
     spec:
       securityContext:
         runAsUser: 42435
@@ -177,4 +176,3 @@ spec:
           secret:
             secretName: neutron-etc
             defaultMode: 0444
-

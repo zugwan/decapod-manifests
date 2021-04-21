@@ -1,4 +1,3 @@
-
 # Source: openvswitch/templates/daemonset-ovs-vswitchd.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
@@ -16,4 +15,3 @@ rules:
       - list
     resources:
       - pods
-

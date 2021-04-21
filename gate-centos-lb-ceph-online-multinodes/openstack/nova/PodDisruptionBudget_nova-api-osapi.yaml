@@ -1,4 +1,3 @@
-
 # Source: nova/templates/pdb-osapi.yaml
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -11,4 +10,3 @@ spec:
       release_group: nova
       application: nova
       component: os-api
-

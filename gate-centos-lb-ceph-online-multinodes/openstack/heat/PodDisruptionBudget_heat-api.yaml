@@ -1,4 +1,4 @@
-
+---
 # Source: heat/templates/pdb-api.yaml
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -11,4 +11,3 @@ spec:
       release_group: heat
       application: heat
       component: api
-

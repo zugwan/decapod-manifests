@@ -1,4 +1,3 @@
-
 # Source: heat/templates/deployment-api.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -32,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "b814469ae6753dfd221f5a931a0989174069b9cb80cdf5deaf7edd27c8bc09d9"
-        configmap-etc-hash: "a03692225e2e1afc071f21150622af698e4fc83a87ad9f2e26e139dee04d882b"
+        configmap-etc-hash: "7da050e7ef5d61391c99ec0b8df203e82a8ea4c0ec487e3ff68b3883f09383c4"
     spec:
       serviceAccountName: heat-api
       securityContext:
@@ -174,4 +173,3 @@ spec:
           secret:
             secretName: heat-etc
             defaultMode: 0444
-

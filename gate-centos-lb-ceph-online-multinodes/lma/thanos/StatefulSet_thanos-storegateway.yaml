@@ -1,4 +1,3 @@
-
 # Source: thanos/templates/storegateway/statefulset.yaml
 apiVersion: apps/v1
 kind: StatefulSet

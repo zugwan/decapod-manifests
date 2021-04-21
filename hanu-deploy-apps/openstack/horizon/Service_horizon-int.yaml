@@ -1,4 +1,3 @@
-
 # Source: horizon/templates/service.yaml
 apiVersion: v1
 kind: Service
@@ -19,4 +18,3 @@ spec:
     component: server
   
   type: NodePort
-

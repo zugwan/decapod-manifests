@@ -1,4 +1,3 @@
-
 # Source: thanos/templates/query-frontend/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -27,6 +26,8 @@ spec:
         app.kubernetes.io/instance: thanos
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: query-frontend
+      annotations:
+        checksum/query-frontend-configuration: 5e8bd091514c7bb0ef0eae59e351fe0a80e39e8c55a504a15dd231a43fd1cbb4
     spec:
       
       serviceAccount: thanos-query-frontend
@@ -61,6 +62,10 @@ spec:
             - --log.level=info
             - --http-address=0.0.0.0:10902
             - --query-frontend.downstream-url=http://thanos-query:9090
+            - --query-range.response-cache-config-file=/conf/cache/config.yml
+            - --query-range.split-interval=24h
+            - --query-range.max-retries-per-request=3
+            - --query-frontend.log-queries-longer-than=60
           ports:
             - name: http
               containerPort: 10902
@@ -81,5 +86,9 @@ spec:
             limits: {}
             requests: {}
           volumeMounts:
+            - name: cache-config
+              mountPath: /conf/cache
       volumes:
-
+        - name: cache-config
+          configMap:
+            name: thanos-query-frontend-configmap

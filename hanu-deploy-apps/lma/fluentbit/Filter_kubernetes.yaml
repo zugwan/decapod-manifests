@@ -1,0 +1,49 @@
+# Source: fluentbit-operator/templates/fluentbit/filters.yaml
+apiVersion: logging.kubesphere.io/v1alpha2
+kind: Filter
+metadata:
+  name: kubernetes
+  namespace: lma
+  labels:
+    logging.kubesphere.io/enabled: "true"
+    app.kubernetes.io/version: v0.0.1
+spec:
+  match: "kube.*"
+  filters:
+  - kubernetes:
+      kubeURL: https://kubernetes.default.svc.cluster.local:443
+      mergeLog: true
+      labels: false
+      annotations: false
+  - nest:
+      operation: lift
+      nestedUnder: kubernetes
+      addPrefix: kubernetes_
+  - modify:
+      rules:
+      - remove: stream
+      - remove: kubernetes_pod_id
+      - remove: kubernetes_docker_id
+      - remove: kubernetes_container_hash
+  - nest:
+      operation: nest
+      wildcard:
+      - kubernetes_*
+      nestUnder: kubernetes
+      removePrefix: kubernetes_
+  - rewriteTag:
+      rules:
+      - key: $kubernetes['container_name']
+        newTag: intended_drop.$TAG
+        regex: ^(kibana|elasticsearch|fluent-bit)$
+        keep: false
+      - key: $kubernetes['namespace_name']
+        newTag:  seperate.platform.$TAG
+        regex: ^(kube-system|lma|fed|argo|openstack|istio-system|istio-services|trident|registry)$
+        keep: false
+      - key: "$log"
+        regex: "(update.?error)"
+        newTag: m_critical.$TAG
+        keep: true
+      emitterName: alertrule_match
+      emitterStorageType: memory

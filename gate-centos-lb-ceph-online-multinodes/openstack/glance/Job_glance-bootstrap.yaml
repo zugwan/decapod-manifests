@@ -1,4 +1,3 @@
-
 # Source: glance/templates/job-bootstrap.yaml
 apiVersion: batch/v1
 kind: Job
@@ -154,4 +153,3 @@ spec:
             defaultMode: 0444        
         - emptyDir: {}
           name: imagedir
-

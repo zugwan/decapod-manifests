@@ -1,7 +1,5 @@
-
 # Source: ingress/templates/configmap-services-udp.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ingress-services-udp
-

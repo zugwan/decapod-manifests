@@ -1,4 +1,3 @@
-
 # Source: memcached/templates/configmap-bin.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -18,4 +17,3 @@ data:
       -U 0 \
       -c ${MEMCACHED_MAX_CONNECTIONS} \
       -m ${MEMCACHED_MEMORY}
-

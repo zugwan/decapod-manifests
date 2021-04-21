@@ -1,4 +1,3 @@
-
 # Source: thanos/templates/query-frontend/service.yaml
 apiVersion: v1
 kind: Service
@@ -22,4 +21,3 @@ spec:
     app.kubernetes.io/name: thanos
     app.kubernetes.io/instance: thanos
     app.kubernetes.io/component: query-frontend
-

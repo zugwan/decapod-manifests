@@ -1,4 +1,3 @@
-
 # Source: lma-addons/templates/prometheus-rule/kube-node-resources.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -25,4 +24,3 @@ spec:
       record: cluster:node_cpu:sum_rate5m
     - expr: cluster:node_cpu_seconds_total:rate5m / count(sum(node_cpu_seconds_total) BY (instance, cpu))
       record: cluster:node_cpu:ratio
-

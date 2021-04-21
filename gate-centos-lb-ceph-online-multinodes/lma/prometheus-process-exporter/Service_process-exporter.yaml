@@ -1,4 +1,3 @@
-
 # Source: prometheus-process-exporter/templates/service.yaml
 apiVersion: v1
 kind: Service
@@ -22,4 +21,3 @@ spec:
     release_group: prometheus-process-exporter
     application: process_exporter
     component: metrics
-

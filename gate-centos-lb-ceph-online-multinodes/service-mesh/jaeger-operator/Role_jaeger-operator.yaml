@@ -1,4 +1,3 @@
-
 # Source: jaeger-operator/templates/role.yaml
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -113,4 +112,3 @@ rules:
   - horizontalpodautoscalers
   verbs:
   - '*'
-

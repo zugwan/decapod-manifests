@@ -1,4 +1,3 @@
-
 # Source: sona/templates/configmap-cfg.yaml
 # Copyright 2018 The SONA Authors.
 #
@@ -45,4 +44,3 @@ data:
        }
     }
     ]}
-

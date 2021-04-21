@@ -1,4 +1,3 @@
-
 # Source: nova/templates/deployment-placement.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -13,4 +12,3 @@ subjects:
   - kind: ServiceAccount
     name: nova-placement-api
     namespace: openstack
-

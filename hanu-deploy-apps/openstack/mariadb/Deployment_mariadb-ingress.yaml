@@ -1,4 +1,3 @@
-
 # Source: mariadb/templates/deployment-ingress.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -165,4 +164,3 @@ spec:
           configMap:
             name: mariadb-ingress-etc
             defaultMode: 0444
-

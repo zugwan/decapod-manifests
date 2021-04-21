@@ -1,4 +1,3 @@
-
 # Source: jaeger-operator/templates/jaeger.yaml
 apiVersion: jaegertracing.io/v1
 kind: Jaeger

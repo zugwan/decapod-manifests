@@ -1,4 +1,3 @@
-
 # Source: nova/templates/job-bootstrap.yaml
 apiVersion: batch/v1
 kind: Job
@@ -152,4 +151,3 @@ spec:
           secret:
             secretName: "nova-etc"
             defaultMode: 0444
-

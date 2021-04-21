@@ -1,4 +1,3 @@
-
 # Source: kiali-operator/templates/kiali-cr.yaml
 apiVersion: kiali.io/v1alpha1
 kind: Kiali

@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/prometheus-operator/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -66,4 +65,3 @@ spec:
       serviceAccountName: prometheus-operator-operator
       nodeSelector:
         taco-lma: enabled
-

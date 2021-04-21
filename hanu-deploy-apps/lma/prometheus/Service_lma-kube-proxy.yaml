@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/exporters/kube-proxy/service.yaml
 apiVersion: v1
 kind: Service
@@ -22,4 +21,3 @@ spec:
   selector:
     k8s-app: kube-proxy
   type: ClusterIP
-

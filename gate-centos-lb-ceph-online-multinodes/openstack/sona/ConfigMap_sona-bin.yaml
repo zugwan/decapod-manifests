@@ -1,4 +1,4 @@
-
+---
 # Source: sona/templates/configmap-bin.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -637,4 +637,3 @@ data:
           f.write(output)
       else:
         print output
-

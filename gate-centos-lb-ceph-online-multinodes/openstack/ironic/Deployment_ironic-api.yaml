@@ -1,4 +1,3 @@
-
 # Source: ironic/templates/deployment-api.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -32,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "49603a19725fbe98889c3f69a873769aeeedab1921f56f5006b2587d525f5578"
-        configmap-etc-hash: "4917698de9544d1b0019006f63dd59bfe8af26f26dc65391eb5d151aeb7eb04a"
+        configmap-etc-hash: "e97e06ae287641288b1af81d720e2fd54a0b53f6c1fe971292346c7059473765"
     spec:
       serviceAccountName: ironic-api
       affinity:
@@ -240,4 +239,3 @@ spec:
             defaultMode: 0444
         - name: pod-shared
           emptyDir: {}
-

@@ -1,4 +1,3 @@
-
 # Source: kube-prometheus-stack/templates/prometheus/service.yaml
 apiVersion: v1
 kind: Service
@@ -22,4 +21,3 @@ spec:
     app: prometheus
     prometheus: fed-master-prometheus
   type: "NodePort"
-

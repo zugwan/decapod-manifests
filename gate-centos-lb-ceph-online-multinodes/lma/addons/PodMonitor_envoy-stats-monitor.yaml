@@ -1,4 +1,3 @@
-
 # Source: lma-addons/templates/service-monitor/istio.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
@@ -36,4 +35,3 @@ spec:
     - sourceLabels: [__meta_kubernetes_pod_name]
       action: replace
       targetLabel: pod_name
-

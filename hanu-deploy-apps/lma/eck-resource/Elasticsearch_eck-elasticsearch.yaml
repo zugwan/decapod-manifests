@@ -8,11 +8,12 @@ spec:
   http:
     service:
       spec:
-        type: NodePort
         ports:
-        - name: elasticsearch
+        - name: http
+          nodePort: 30002
           port: 9200
           targetPort: 9200
+        type: NodePort
   version: 7.5.1
   image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
   podDisruptionBudget: {}

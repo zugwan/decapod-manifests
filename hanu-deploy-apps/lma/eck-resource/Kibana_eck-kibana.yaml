@@ -6,8 +6,6 @@ metadata:
 spec:
   version: 7.5.1
   image: "docker.elastic.co/kibana/kibana:7.5.1"
-  nodeSelector:
-    taco-lma: enabled
   count: 1
   elasticsearchRef:
     name: eck-elasticsearch

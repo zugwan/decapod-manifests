@@ -6,8 +6,7 @@ metadata:
   namespace: elastic-system
   labels:
     
-    app.kubernetes.io/name: elastic-operator
-    app.kubernetes.io/instance: eck-operator
+    control-plane: elastic-operator
     app.kubernetes.io/version: "1.3.1"
     helm.sh/chart: eck-operator-1.3.1
     app.kubernetes.io/managed-by: Helm
@@ -15,8 +14,7 @@ spec:
   selector:
     matchLabels:
       
-      app.kubernetes.io/name: elastic-operator
-      app.kubernetes.io/instance: eck-operator
+      control-plane: elastic-operator
   serviceName: elastic-operator
   replicas: 1
   template:
@@ -25,11 +23,10 @@ spec:
         # Rename the fields "error" to "error.message" and "source" to "event.source"
         # This is to avoid a conflict with the ECS "error" and "source" documents.
         "co.elastic.logs/raw": "[{\"type\":\"container\",\"json.keys_under_root\":true,\"paths\":[\"/var/log/containers/*${data.kubernetes.container.id}.log\"],\"processors\":[{\"convert\":{\"mode\":\"rename\",\"ignore_missing\":true,\"fields\":[{\"from\":\"error\",\"to\":\"_error\"}]}},{\"convert\":{\"mode\":\"rename\",\"ignore_missing\":true,\"fields\":[{\"from\":\"_error\",\"to\":\"error.message\"}]}},{\"convert\":{\"mode\":\"rename\",\"ignore_missing\":true,\"fields\":[{\"from\":\"source\",\"to\":\"_source\"}]}},{\"convert\":{\"mode\":\"rename\",\"ignore_missing\":true,\"fields\":[{\"from\":\"_source\",\"to\":\"event.source\"}]}}]}]"
-        "checksum/config": bda1ebb5e59f2099e82c98eb7163e6e7cbba9b223757e4e1c72faa6215b7b450
+        "checksum/config": ee68b5877bbac6a3071ec907276f8966d24c9878268247a2b3da09837ba8c5fa
       labels:
         
-        app.kubernetes.io/name: elastic-operator
-        app.kubernetes.io/instance: eck-operator
+        control-plane: elastic-operator
     spec:
       terminationGracePeriodSeconds: 10
       serviceAccountName: elastic-operator

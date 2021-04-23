@@ -19,6 +19,8 @@ spec:
       limits:
         cpu: 300m
         memory: 256Mi
+  ingress:
+    enabled: false
   storage:
     esIndexCleaner:
       enabled: true

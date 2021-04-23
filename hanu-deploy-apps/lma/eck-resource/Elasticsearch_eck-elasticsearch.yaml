@@ -32,11 +32,11 @@ spec:
         - name: elasticsearch
           resources:
             limits:
-              memory: "4Gi"
+              memory: "2Gi"
               cpu: 2   
           env:
           - name: ES_JAVA_OPTS
-            value: "-Xms2g -Xmx2g"
+            value: "-Xms1g -Xmx1g"
         nodeSelector:
           taco-lma: enabled
     volumeClaimTemplates:
@@ -65,7 +65,7 @@ spec:
               cpu: 2   
           env:
           - name: ES_JAVA_OPTS
-            value: "-Xms2g -Xmx2g"
+            value: "-Xms1g -Xmx1g"
         nodeSelector:
           taco-lma: enabled
     volumeClaimTemplates:
@@ -75,5 +75,5 @@ spec:
           accessModes: [ReadWriteOnce]
           resources:
             requests:
-              storage: 10Gi
+              storage: 1Gi
           storageClassName: rbd

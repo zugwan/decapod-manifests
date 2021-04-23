@@ -1,3 +1,4 @@
+---
 # Source: istio-operator/templates/namespace.yaml
 apiVersion: v1
 kind: Namespace

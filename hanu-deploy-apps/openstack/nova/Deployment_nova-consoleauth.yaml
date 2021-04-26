@@ -1,21 +1,21 @@
-# Source: heat/templates/deployment-cfn.yaml
+# Source: nova/templates/deployment-consoleauth.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: heat-cfn
+  name: nova-consoleauth
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
-    release_group: heat
-    application: heat
-    component: cfn
+    release_group: nova
+    application: nova
+    component: consoleauth
 spec:
   replicas: 3
   selector:
     matchLabels:
-      release_group: heat
-      application: heat
-      component: cfn
+      release_group: nova
+      application: nova
+      component: consoleauth
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -25,17 +25,18 @@ spec:
   template:
     metadata:
       labels:
-        release_group: heat
-        application: heat
-        component: cfn
+        release_group: nova
+        application: nova
+        component: consoleauth
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
-        configmap-bin-hash: "b814469ae6753dfd221f5a931a0989174069b9cb80cdf5deaf7edd27c8bc09d9"
-        configmap-etc-hash: "0e390788f732d385e27d98331ae712c330c5f523ea47ded73ee48701ed8be9a8"
+        configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
+        configmap-etc-hash: "e9f4a89e2265227ddd61674303a3b20128add1c0bfbbd420b6c334a52702d78f"
     spec:
-      serviceAccountName: heat-cfn
+      serviceAccountName: nova-consoleauth
       securityContext:
-        runAsUser: 42418
+        runAsUser: 42436
+        runAsUser: 42436
       affinity:
         
         podAntiAffinity:
@@ -46,20 +47,19 @@ spec:
                   - key: release_group
                     operator: In
                     values:
-                    - heat
+                    - nova
                   - key: application
                     operator: In
                     values:
-                    - heat
+                    - nova
                   - key: component
                     operator: In
                     values:
-                    - cfn
+                    - consoleauth
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
         openstack-control-plane: enabled
-      terminationGracePeriodSeconds: 30
       initContainers:
         
         - name: init
@@ -85,9 +85,9 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "openstack:mariadb,openstack:rabbitmq,openstack:keystone-api"
+              value: "openstack:rabbitmq,openstack:mariadb,openstack:keystone-api,openstack:nova-api"
             - name: DEPENDENCY_JOBS
-              value: "heat-db-sync,heat-rabbit-init,heat-ks-user,heat-trustee-ks-user,heat-domain-ks-user,heat-ks-endpoints,heat-bootstrap"
+              value: "nova-db-sync,nova-rabbit-init"
             - name: DEPENDENCY_DAEMONSET
               value: ""
             - name: DEPENDENCY_CONTAINER
@@ -101,75 +101,73 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: heat-cfn
-          image: "deploy001:5000/stein/ubuntu-source-heat-api:taco-0.1.0"
+        - name: nova-consoleauth
+          image: "deploy001:5000/stein/ubuntu-source-nova-consoleauth:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-          command:
-            - /tmp/heat-cfn.sh
-            - start
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - /tmp/heat-cfn.sh
-                  - stop
-          ports:
-            - name: h-cfn
-              containerPort: 8000
           readinessProbe:
-            tcpSocket:
-              port: 8000
+            exec:
+              command:
+                - python
+                - /tmp/health-probe.py
+                - --config-file
+                - /etc/nova/nova.conf
+                - --service-queue-name
+                - consoleauth
+            initialDelaySeconds: 80
+            periodSeconds: 90
+            timeoutSeconds: 70
           livenessProbe:
-            tcpSocket:
-              port: 8000
-            initialDelaySeconds: 30
+            exec:
+              command:
+                - python
+                - /tmp/health-probe.py
+                - --config-file
+                - /etc/nova/nova.conf
+                - --service-queue-name
+                - consoleauth
+                - --liveness-probe
+            initialDelaySeconds: 120
+            periodSeconds: 90
+            timeoutSeconds: 70
+          command:
+            - /tmp/nova-consoleauth.sh
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
-            - name: pod-etc-heat
-              mountPath: /etc/heat
-            - name: heat-bin
-              mountPath: /tmp/heat-cfn.sh
-              subPath: heat-cfn.sh
+            - name: nova-bin
+              mountPath: /tmp/nova-consoleauth.sh
+              subPath: nova-consoleauth.sh
               readOnly: true
-            - name: heat-etc
-              mountPath: /etc/heat/heat.conf
-              subPath: heat.conf
+            - name: nova-bin
+              mountPath: /tmp/health-probe.py
+              subPath: health-probe.py
               readOnly: true
-            
-            - name: heat-etc
-              mountPath: /etc/heat/logging.conf
+            - name: nova-etc
+              mountPath: /etc/nova/nova.conf
+              subPath: nova.conf
+              readOnly: true
+            - name: nova-etc
+              mountPath: /etc/nova/logging.conf
               subPath: logging.conf
               readOnly: true
-            
-            - name: heat-etc
-              mountPath: /etc/heat/api-paste.ini
-              subPath: api-paste.ini
-              readOnly: true
-            - name: heat-etc
-              mountPath: /etc/heat/policy.json
-              subPath: policy.json
-              readOnly: true
-            - name: heat-etc
-              mountPath: /etc/heat/api_audit_map.conf
-              subPath: api_audit_map.conf
+            - name: nova-etc
+              mountPath: /etc/nova/policy.yaml
+              subPath: policy.yaml
               readOnly: true
 
       volumes:
         - name: pod-tmp
           emptyDir: {}
-        - name: pod-etc-heat
-          emptyDir: {}
-        - name: heat-bin
+        - name: nova-bin
           configMap:
-            name: heat-bin
+            name: nova-bin
             defaultMode: 0555
-        - name: heat-etc
+        - name: nova-etc
           secret:
-            secretName: heat-etc
+            secretName: nova-etc
             defaultMode: 0444

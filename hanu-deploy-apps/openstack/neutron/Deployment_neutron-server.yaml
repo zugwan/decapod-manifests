@@ -1,21 +1,21 @@
-# Source: nova/templates/deployment-api-osapi.yaml
+# Source: neutron/templates/deployment-server.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nova-api-osapi
+  name: neutron-server
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
-    release_group: nova
-    application: nova
-    component: os-api
+    release_group: neutron
+    application: neutron
+    component: server
 spec:
   replicas: 3
   selector:
     matchLabels:
-      release_group: nova
-      application: nova
-      component: os-api
+      release_group: neutron
+      application: neutron
+      component: server
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -25,18 +25,17 @@ spec:
   template:
     metadata:
       labels:
-        release_group: nova
-        application: nova
-        component: os-api
+        release_group: neutron
+        application: neutron
+        component: server
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
-        configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
-        configmap-etc-hash: "8e3076e5af04c524303f5b6989fe77af250f8bcb21f2abf2ecaece7a0742381d"
+        configmap-bin-hash: "5c7b05eb47e1f5bad4324b03a4e7646e24311e8c8f9be5116c41b3dbf18d8f3c"
+        configmap-etc-hash: "44d789acdd7f1018efc0971949aa7ce5781eabb95a3f6a18c98112531a88ca9c"
     spec:
-      serviceAccountName: nova-api-osapi
       securityContext:
-        runAsUser: 42436
-        runAsUser: 42436
+        runAsUser: 42435
+      serviceAccountName: neutron-server
       affinity:
         
         podAntiAffinity:
@@ -47,15 +46,15 @@ spec:
                   - key: release_group
                     operator: In
                     values:
-                    - nova
+                    - neutron
                   - key: application
                     operator: In
                     values:
-                    - nova
+                    - neutron
                   - key: component
                     operator: In
                     values:
-                    - os-api
+                    - server
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
@@ -86,9 +85,9 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "openstack:rabbitmq,openstack:mariadb,openstack:keystone-api"
+              value: "openstack:mariadb,openstack:rabbitmq,openstack:memcached,openstack:keystone-api"
             - name: DEPENDENCY_JOBS
-              value: "nova-db-sync,nova-ks-user,nova-ks-endpoints,nova-rabbit-init"
+              value: "neutron-db-sync,neutron-ks-user,neutron-ks-endpoints,neutron-rabbit-init"
             - name: DEPENDENCY_DAEMONSET
               value: ""
             - name: DEPENDENCY_CONTAINER
@@ -102,73 +101,78 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: nova-osapi
-          image: "deploy001:5000/stein/ubuntu-source-nova-api:taco-0.1.0"
+        - name: neutron-server
+          image: "deploy001:5000/stein/ubuntu-source-neutron-server:taco-0.1.0.onos"
           imagePullPolicy: IfNotPresent
           
           
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
+          readinessProbe:
+            tcpSocket:
+              port: 9696
+          livenessProbe:
+            initialDelaySeconds: 60
+            tcpSocket:
+              port: 9696
           command:
-            - /tmp/nova-api.sh
+            - /tmp/neutron-server.sh
             - start
           lifecycle:
             preStop:
               exec:
                 command:
-                  - /tmp/nova-api.sh
+                  - /tmp/neutron-server.sh
                   - stop
           ports:
-            - name: n-api
-              containerPort: 8774
-          readinessProbe:
-            tcpSocket:
-              port: 8774
-          livenessProbe:
-            tcpSocket:
-              port: 8774
-            initialDelaySeconds: 30
+            - name: q-api
+              containerPort: 9696
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
-            - name: pod-var-nova
-              mountPath: /var/lib/nova
-            - name: nova-bin
-              mountPath: /tmp/nova-api.sh
-              subPath: nova-api.sh
+            - name: pod-var-neutron
+              mountPath: /var/lib/neutron
+            - name: neutron-bin
+              mountPath: /tmp/neutron-server.sh
+              subPath: neutron-server.sh
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/nova.conf
-              subPath: nova.conf
+            - name: neutron-etc
+              mountPath: /etc/neutron/neutron.conf
+              subPath: neutron.conf
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/logging.conf
+            - name: neutron-etc
+              mountPath: /etc/neutron/logging.conf
               subPath: logging.conf
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/api-paste.ini
+            - name: neutron-etc
+              mountPath: /etc/neutron/api_audit_map.conf
+              subPath: api_audit_map.conf
+              readOnly: true
+            - name: neutron-etc
+              mountPath: /etc/neutron/plugins/ml2/ml2_conf.ini
+              subPath: ml2_conf.ini
+              readOnly: true
+            
+            - name: neutron-etc
+              mountPath: /etc/neutron/api-paste.ini
               subPath: api-paste.ini
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/policy.yaml
-              subPath: policy.yaml
-              readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/api_audit_map.conf
-              subPath: api_audit_map.conf
+            - name: neutron-etc
+              mountPath: /etc/neutron/policy.json
+              subPath: policy.json
               readOnly: true
 
       volumes:
         - name: pod-tmp
           emptyDir: {}
-        - name: pod-var-nova
+        - name: pod-var-neutron
           emptyDir: {}
-        - name: nova-bin
+        - name: neutron-bin
           configMap:
-            name: nova-bin
+            name: neutron-bin
             defaultMode: 0555
-        - name: nova-etc
+        - name: neutron-etc
           secret:
-            secretName: nova-etc
+            secretName: neutron-etc
             defaultMode: 0444

@@ -1,21 +1,21 @@
-# Source: nova/templates/deployment-scheduler.yaml
+# Source: nova/templates/deployment-conductor.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nova-scheduler
+  name: nova-conductor
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
     release_group: nova
     application: nova
-    component: scheduler
+    component: conductor
 spec:
   replicas: 3
   selector:
     matchLabels:
       release_group: nova
       application: nova
-      component: scheduler
+      component: conductor
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -27,13 +27,13 @@ spec:
       labels:
         release_group: nova
         application: nova
-        component: scheduler
+        component: conductor
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
-        configmap-etc-hash: "8e3076e5af04c524303f5b6989fe77af250f8bcb21f2abf2ecaece7a0742381d"
+        configmap-etc-hash: "e9f4a89e2265227ddd61674303a3b20128add1c0bfbbd420b6c334a52702d78f"
     spec:
-      serviceAccountName: nova-scheduler
+      serviceAccountName: nova-conductor
       securityContext:
         runAsUser: 42436
         runAsUser: 42436
@@ -55,7 +55,7 @@ spec:
                   - key: component
                     operator: In
                     values:
-                    - scheduler
+                    - conductor
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
@@ -101,8 +101,8 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: nova-scheduler
-          image: "deploy001:5000/stein/ubuntu-source-nova-scheduler:taco-0.1.0"
+        - name: nova-conductor
+          image: "deploy001:5000/stein/ubuntu-source-nova-conductor:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
@@ -117,7 +117,7 @@ spec:
                 - --config-file
                 - /etc/nova/nova.conf
                 - --service-queue-name
-                - scheduler
+                - conductor
             initialDelaySeconds: 80
             periodSeconds: 90
             timeoutSeconds: 70
@@ -129,19 +129,19 @@ spec:
                 - --config-file
                 - /etc/nova/nova.conf
                 - --service-queue-name
-                - scheduler
+                - conductor
                 - --liveness-probe
             initialDelaySeconds: 120
             periodSeconds: 90
             timeoutSeconds: 70
           command:
-            - /tmp/nova-scheduler.sh
+            - /tmp/nova-conductor.sh
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
             - name: nova-bin
-              mountPath: /tmp/nova-scheduler.sh
-              subPath: nova-scheduler.sh
+              mountPath: /tmp/nova-conductor.sh
+              subPath: nova-conductor.sh
               readOnly: true
             - name: nova-bin
               mountPath: /tmp/health-probe.py

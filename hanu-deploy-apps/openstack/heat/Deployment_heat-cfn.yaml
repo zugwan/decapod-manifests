@@ -1,21 +1,21 @@
-# Source: nova/templates/deployment-placement.yaml
+# Source: heat/templates/deployment-cfn.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nova-placement-api
+  name: heat-cfn
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
-    release_group: nova
-    application: nova
-    component: placement
+    release_group: heat
+    application: heat
+    component: cfn
 spec:
   replicas: 3
   selector:
     matchLabels:
-      release_group: nova
-      application: nova
-      component: placement
+      release_group: heat
+      application: heat
+      component: cfn
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -25,15 +25,17 @@ spec:
   template:
     metadata:
       labels:
-        release_group: nova
-        application: nova
-        component: placement
+        release_group: heat
+        application: heat
+        component: cfn
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
-        configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
-        configmap-etc-hash: "8e3076e5af04c524303f5b6989fe77af250f8bcb21f2abf2ecaece7a0742381d"
+        configmap-bin-hash: "b814469ae6753dfd221f5a931a0989174069b9cb80cdf5deaf7edd27c8bc09d9"
+        configmap-etc-hash: "05951d43a75eec632ab5f5a7d5ade44d744c6f806c042a3fec1886efc08a7c67"
     spec:
-      serviceAccountName: nova-placement-api
+      serviceAccountName: heat-cfn
+      securityContext:
+        runAsUser: 42418
       affinity:
         
         podAntiAffinity:
@@ -44,15 +46,15 @@ spec:
                   - key: release_group
                     operator: In
                     values:
-                    - nova
+                    - heat
                   - key: application
                     operator: In
                     values:
-                    - nova
+                    - heat
                   - key: component
                     operator: In
                     values:
-                    - placement
+                    - cfn
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
@@ -83,9 +85,9 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "openstack:rabbitmq,openstack:mariadb,openstack:keystone-api"
+              value: "openstack:mariadb,openstack:rabbitmq,openstack:keystone-api"
             - name: DEPENDENCY_JOBS
-              value: "nova-db-sync,nova-ks-user,nova-ks-endpoints,nova-rabbit-init"
+              value: "heat-db-sync,heat-rabbit-init,heat-ks-user,heat-trustee-ks-user,heat-domain-ks-user,heat-ks-endpoints,heat-bootstrap"
             - name: DEPENDENCY_DAEMONSET
               value: ""
             - name: DEPENDENCY_CONTAINER
@@ -99,81 +101,75 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: nova-placement-api
-          image: "deploy001:5000/stein/ubuntu-source-nova-placement-api:taco-0.1.0"
+        - name: heat-cfn
+          image: "deploy001:5000/stein/ubuntu-source-heat-api:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: true
           command:
-            - /tmp/nova-placement-api.sh
+            - /tmp/heat-cfn.sh
             - start
           lifecycle:
             preStop:
               exec:
                 command:
-                  - /tmp/nova-placement-api.sh
+                  - /tmp/heat-cfn.sh
                   - stop
           ports:
-            - name: p-api
-              containerPort: 8778
+            - name: h-cfn
+              containerPort: 8000
           readinessProbe:
-            #NOTE(portdirect): use tcpSocket check as HTTP will return 401
             tcpSocket:
-              port: 8778
-            initialDelaySeconds: 15
-            periodSeconds: 10
+              port: 8000
           livenessProbe:
             tcpSocket:
-              port: 8778
-            initialDelaySeconds: 50
-            periodSeconds: 10
+              port: 8000
+            initialDelaySeconds: 30
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
-            - name: wsgi-nova
-              mountPath: /var/www/cgi-bin/nova
-            - name: nova-bin
-              mountPath: /tmp/nova-placement-api.sh
-              subPath: nova-placement-api.sh
+            - name: pod-etc-heat
+              mountPath: /etc/heat
+            - name: heat-bin
+              mountPath: /tmp/heat-cfn.sh
+              subPath: heat-cfn.sh
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/nova.conf
-              subPath: nova.conf
+            - name: heat-etc
+              mountPath: /etc/heat/heat.conf
+              subPath: heat.conf
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/logging.conf
+            
+            - name: heat-etc
+              mountPath: /etc/heat/logging.conf
               subPath: logging.conf
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/api-paste.ini
+            
+            - name: heat-etc
+              mountPath: /etc/heat/api-paste.ini
               subPath: api-paste.ini
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/policy.yaml
-              subPath: policy.yaml
+            - name: heat-etc
+              mountPath: /etc/heat/policy.json
+              subPath: policy.json
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/apache2/conf-enabled/wsgi-nova-placement.conf
-              subPath: wsgi-nova-placement.conf
-              readOnly: true
-            - name: nova-etc
-              mountPath: /etc/apache2/conf-enabled/security.conf
-              subPath: security.conf
+            - name: heat-etc
+              mountPath: /etc/heat/api_audit_map.conf
+              subPath: api_audit_map.conf
               readOnly: true
 
       volumes:
         - name: pod-tmp
           emptyDir: {}
-        - name: wsgi-nova
+        - name: pod-etc-heat
           emptyDir: {}
-        - name: nova-bin
+        - name: heat-bin
           configMap:
-            name: nova-bin
+            name: heat-bin
             defaultMode: 0555
-        - name: nova-etc
+        - name: heat-etc
           secret:
-            secretName: nova-etc
+            secretName: heat-etc
             defaultMode: 0444

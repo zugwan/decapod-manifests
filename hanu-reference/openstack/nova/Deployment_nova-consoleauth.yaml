@@ -1,21 +1,21 @@
-# Source: nova/templates/deployment-api-osapi.yaml
+# Source: nova/templates/deployment-consoleauth.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nova-api-osapi
+  name: nova-consoleauth
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
     release_group: nova
     application: nova
-    component: os-api
+    component: consoleauth
 spec:
   replicas: 3
   selector:
     matchLabels:
       release_group: nova
       application: nova
-      component: os-api
+      component: consoleauth
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -27,13 +27,13 @@ spec:
       labels:
         release_group: nova
         application: nova
-        component: os-api
+        component: consoleauth
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
-        configmap-etc-hash: "abf24e061b5e08b54562fade0bcce70a784099d77f1c04a8d280ea30091d8188"
+        configmap-etc-hash: "8e3076e5af04c524303f5b6989fe77af250f8bcb21f2abf2ecaece7a0742381d"
     spec:
-      serviceAccountName: nova-api-osapi
+      serviceAccountName: nova-consoleauth
       securityContext:
         runAsUser: 42436
         runAsUser: 42436
@@ -55,12 +55,11 @@ spec:
                   - key: component
                     operator: In
                     values:
-                    - os-api
+                    - consoleauth
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
         openstack-control-plane: enabled
-      terminationGracePeriodSeconds: 30
       initContainers:
         
         - name: init
@@ -86,9 +85,9 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "openstack:rabbitmq,openstack:mariadb,openstack:keystone-api"
+              value: "openstack:rabbitmq,openstack:mariadb,openstack:keystone-api,openstack:nova-api"
             - name: DEPENDENCY_JOBS
-              value: "nova-db-sync,nova-ks-user,nova-ks-endpoints,nova-rabbit-init"
+              value: "nova-db-sync,nova-rabbit-init"
             - name: DEPENDENCY_DAEMONSET
               value: ""
             - name: DEPENDENCY_CONTAINER
@@ -102,41 +101,51 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: nova-osapi
-          image: "deploy001:5000/stein/ubuntu-source-nova-api:taco-0.1.0"
+        - name: nova-consoleauth
+          image: "deploy001:5000/stein/ubuntu-source-nova-consoleauth:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-          command:
-            - /tmp/nova-api.sh
-            - start
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - /tmp/nova-api.sh
-                  - stop
-          ports:
-            - name: n-api
-              containerPort: 8774
           readinessProbe:
-            tcpSocket:
-              port: 8774
+            exec:
+              command:
+                - python
+                - /tmp/health-probe.py
+                - --config-file
+                - /etc/nova/nova.conf
+                - --service-queue-name
+                - consoleauth
+            initialDelaySeconds: 80
+            periodSeconds: 90
+            timeoutSeconds: 70
           livenessProbe:
-            tcpSocket:
-              port: 8774
-            initialDelaySeconds: 30
+            exec:
+              command:
+                - python
+                - /tmp/health-probe.py
+                - --config-file
+                - /etc/nova/nova.conf
+                - --service-queue-name
+                - consoleauth
+                - --liveness-probe
+            initialDelaySeconds: 120
+            periodSeconds: 90
+            timeoutSeconds: 70
+          command:
+            - /tmp/nova-consoleauth.sh
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
-            - name: pod-var-nova
-              mountPath: /var/lib/nova
             - name: nova-bin
-              mountPath: /tmp/nova-api.sh
-              subPath: nova-api.sh
+              mountPath: /tmp/nova-consoleauth.sh
+              subPath: nova-consoleauth.sh
+              readOnly: true
+            - name: nova-bin
+              mountPath: /tmp/health-probe.py
+              subPath: health-probe.py
               readOnly: true
             - name: nova-etc
               mountPath: /etc/nova/nova.conf
@@ -147,22 +156,12 @@ spec:
               subPath: logging.conf
               readOnly: true
             - name: nova-etc
-              mountPath: /etc/nova/api-paste.ini
-              subPath: api-paste.ini
-              readOnly: true
-            - name: nova-etc
               mountPath: /etc/nova/policy.yaml
               subPath: policy.yaml
-              readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/api_audit_map.conf
-              subPath: api_audit_map.conf
               readOnly: true
 
       volumes:
         - name: pod-tmp
-          emptyDir: {}
-        - name: pod-var-nova
           emptyDir: {}
         - name: nova-bin
           configMap:

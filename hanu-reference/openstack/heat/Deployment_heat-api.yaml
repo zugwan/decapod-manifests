@@ -1,21 +1,21 @@
-# Source: nova/templates/deployment-conductor.yaml
+# Source: heat/templates/deployment-api.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nova-conductor
+  name: heat-api
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
-    release_group: nova
-    application: nova
-    component: conductor
+    release_group: heat
+    application: heat
+    component: api
 spec:
   replicas: 3
   selector:
     matchLabels:
-      release_group: nova
-      application: nova
-      component: conductor
+      release_group: heat
+      application: heat
+      component: api
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -25,18 +25,17 @@ spec:
   template:
     metadata:
       labels:
-        release_group: nova
-        application: nova
-        component: conductor
+        release_group: heat
+        application: heat
+        component: api
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
-        configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
-        configmap-etc-hash: "abf24e061b5e08b54562fade0bcce70a784099d77f1c04a8d280ea30091d8188"
+        configmap-bin-hash: "b814469ae6753dfd221f5a931a0989174069b9cb80cdf5deaf7edd27c8bc09d9"
+        configmap-etc-hash: "0e390788f732d385e27d98331ae712c330c5f523ea47ded73ee48701ed8be9a8"
     spec:
-      serviceAccountName: nova-conductor
+      serviceAccountName: heat-api
       securityContext:
-        runAsUser: 42436
-        runAsUser: 42436
+        runAsUser: 42418
       affinity:
         
         podAntiAffinity:
@@ -47,19 +46,20 @@ spec:
                   - key: release_group
                     operator: In
                     values:
-                    - nova
+                    - heat
                   - key: application
                     operator: In
                     values:
-                    - nova
+                    - heat
                   - key: component
                     operator: In
                     values:
-                    - conductor
+                    - api
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
         openstack-control-plane: enabled
+      terminationGracePeriodSeconds: 30
       initContainers:
         
         - name: init
@@ -85,9 +85,9 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "openstack:rabbitmq,openstack:mariadb,openstack:keystone-api,openstack:nova-api"
+              value: "openstack:mariadb,openstack:rabbitmq,openstack:keystone-api"
             - name: DEPENDENCY_JOBS
-              value: "nova-db-sync,nova-rabbit-init"
+              value: "heat-db-sync,heat-rabbit-init,heat-ks-user,heat-trustee-ks-user,heat-domain-ks-user,heat-ks-endpoints,heat-bootstrap"
             - name: DEPENDENCY_DAEMONSET
               value: ""
             - name: DEPENDENCY_CONTAINER
@@ -101,73 +101,75 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: nova-conductor
-          image: "deploy001:5000/stein/ubuntu-source-nova-conductor:taco-0.1.0"
+        - name: heat-api
+          image: "deploy001:5000/stein/ubuntu-source-heat-api:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-          readinessProbe:
-            exec:
-              command:
-                - python
-                - /tmp/health-probe.py
-                - --config-file
-                - /etc/nova/nova.conf
-                - --service-queue-name
-                - conductor
-            initialDelaySeconds: 80
-            periodSeconds: 90
-            timeoutSeconds: 70
-          livenessProbe:
-            exec:
-              command:
-                - python
-                - /tmp/health-probe.py
-                - --config-file
-                - /etc/nova/nova.conf
-                - --service-queue-name
-                - conductor
-                - --liveness-probe
-            initialDelaySeconds: 120
-            periodSeconds: 90
-            timeoutSeconds: 70
           command:
-            - /tmp/nova-conductor.sh
+            - /tmp/heat-api.sh
+            - start
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /tmp/heat-api.sh
+                  - stop
+          ports:
+            - name: h-api
+              containerPort: 8004
+          readinessProbe:
+            tcpSocket:
+              port: 8004
+          livenessProbe:
+            tcpSocket:
+              port: 8004
+            initialDelaySeconds: 30
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
-            - name: nova-bin
-              mountPath: /tmp/nova-conductor.sh
-              subPath: nova-conductor.sh
+            - name: pod-etc-heat
+              mountPath: /etc/heat
+            - name: heat-bin
+              mountPath: /tmp/heat-api.sh
+              subPath: heat-api.sh
               readOnly: true
-            - name: nova-bin
-              mountPath: /tmp/health-probe.py
-              subPath: health-probe.py
+            - name: heat-etc
+              mountPath: /etc/heat/heat.conf
+              subPath: heat.conf
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/nova.conf
-              subPath: nova.conf
-              readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/logging.conf
+            
+            - name: heat-etc
+              mountPath: /etc/heat/logging.conf
               subPath: logging.conf
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/policy.yaml
-              subPath: policy.yaml
+            
+            - name: heat-etc
+              mountPath: /etc/heat/api-paste.ini
+              subPath: api-paste.ini
+              readOnly: true
+            - name: heat-etc
+              mountPath: /etc/heat/policy.json
+              subPath: policy.json
+              readOnly: true
+            - name: heat-etc
+              mountPath: /etc/heat/api_audit_map.conf
+              subPath: api_audit_map.conf
               readOnly: true
 
       volumes:
         - name: pod-tmp
           emptyDir: {}
-        - name: nova-bin
+        - name: pod-etc-heat
+          emptyDir: {}
+        - name: heat-bin
           configMap:
-            name: nova-bin
+            name: heat-bin
             defaultMode: 0555
-        - name: nova-etc
+        - name: heat-etc
           secret:
-            secretName: nova-etc
+            secretName: heat-etc
             defaultMode: 0444

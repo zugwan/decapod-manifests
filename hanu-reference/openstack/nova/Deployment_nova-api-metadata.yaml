@@ -1,21 +1,21 @@
-# Source: nova/templates/deployment-novncproxy.yaml
+# Source: nova/templates/deployment-api-metadata.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nova-novncproxy
+  name: nova-api-metadata
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
     release_group: nova
     application: nova
-    component: novnc-proxy
+    component: metadata
 spec:
   replicas: 3
   selector:
     matchLabels:
       release_group: nova
       application: nova
-      component: novnc-proxy
+      component: metadata
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -27,13 +27,13 @@ spec:
       labels:
         release_group: nova
         application: nova
-        component: novnc-proxy
+        component: metadata
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
-        configmap-etc-hash: "af1e304cd2716dacc99a41a85cc4a08de0a5d1ebd27551295d9d993248c757f1"
+        configmap-etc-hash: "8afde7eb77a5afecfa010b567dcab17f213d5a51cb09f524535eba3597994472"
     spec:
-      serviceAccountName: nova-novncproxy
+      serviceAccountName: nova-api-metadata
       securityContext:
         runAsUser: 42436
         runAsUser: 42436
@@ -55,17 +55,16 @@ spec:
                   - key: component
                     operator: In
                     values:
-                    - novnc-proxy
+                    - metadata
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
         openstack-control-plane: enabled
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
+      terminationGracePeriodSeconds: 30
       initContainers:
         
         - name: init
-          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
           imagePullPolicy: IfNotPresent  
           securityContext:
             allowPrivilegeEscalation: false
@@ -87,9 +86,9 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "openstack:mariadb"
+              value: "openstack:rabbitmq,openstack:mariadb,openstack:keystone-api"
             - name: DEPENDENCY_JOBS
-              value: "nova-db-sync"
+              value: "nova-db-sync,nova-ks-user,nova-ks-endpoints,nova-rabbit-init"
             - name: DEPENDENCY_DAEMONSET
               value: ""
             - name: DEPENDENCY_CONTAINER
@@ -102,8 +101,8 @@ spec:
             - kubernetes-entrypoint
           volumeMounts:
             null
-        - name: nova-novncproxy-init
-          image: "docker.io/openstackhelm/nova:stein-ubuntu_bionic"
+        - name: nova-api-metadata-init
+          image: "deploy001:5000/stein/ubuntu-source-nova-api:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
@@ -111,26 +110,23 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
           command:
-            - /tmp/nova-console-proxy-init.sh
+            - /tmp/nova-api-metadata-init.sh
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
             - name: nova-bin
-              mountPath: /tmp/nova-console-proxy-init.sh
-              subPath: nova-console-proxy-init.sh
+              mountPath: /tmp/nova-api-metadata-init.sh
+              subPath: nova-api-metadata-init.sh
               readOnly: true
             - name: nova-etc
               mountPath: /etc/nova/nova.conf
               subPath: nova.conf
               readOnly: true
-            - name: nova-etc
-              mountPath: /etc/nova/logging.conf
-              subPath: logging.conf
-              readOnly: true
             - name: pod-shared
               mountPath: /tmp/pod-shared
-        - name: nova-novncproxy-init-assets
-          image: "docker.io/kolla/ubuntu-source-nova-novncproxy:ocata"
+      containers:
+        - name: nova-api
+          image: "deploy001:5000/stein/ubuntu-source-nova-api:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
@@ -138,44 +134,41 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
           command:
-            - /tmp/nova-console-proxy-init-assets.sh
-          volumeMounts:
-            - name: pod-tmp
-              mountPath: /tmp
-            - name: nova-bin
-              mountPath: /tmp/nova-console-proxy-init-assets.sh
-              subPath: nova-console-proxy-init-assets.sh
-              readOnly: true
-            - name: pod-usr-share-novnc
-              mountPath: /tmp/usr/share/novnc
-      containers:
-        - name: nova-novncproxy
-          image: "docker.io/openstackhelm/nova:stein-ubuntu_bionic"
-          imagePullPolicy: IfNotPresent
-          
-          
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            - /tmp/nova-api-metadata.sh
+            - start
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /tmp/nova-api-metadata.sh
+                  - stop
+          ports:
+            - containerPort: 8775
           readinessProbe:
             tcpSocket:
-              port: 6080
-            initialDelaySeconds: 30
+              port: 8775
           livenessProbe:
             tcpSocket:
-              port: 6080
+              port: 8775
             initialDelaySeconds: 30
-          command:
-            - /tmp/nova-console-proxy.sh
-          ports:
-            - name: n-novnc
-              containerPort: 6080
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
             - name: nova-bin
-              mountPath: /tmp/nova-console-proxy.sh
-              subPath: nova-console-proxy.sh
+              mountPath: /tmp/nova-api-metadata.sh
+              subPath: nova-api-metadata.sh
+              readOnly: true
+            - name: nova-bin
+              mountPath: /sbin/iptables
+              subPath: fake-iptables.sh
+              readOnly: true
+            - name: nova-bin
+              mountPath: /sbin/iptables-restore
+              subPath: fake-iptables.sh
+              readOnly: true
+            - name: nova-bin
+              mountPath: /sbin/iptables-save
+              subPath: fake-iptables.sh
               readOnly: true
             - name: nova-etc
               mountPath: /etc/nova/nova.conf
@@ -185,11 +178,36 @@ spec:
               mountPath: /etc/nova/logging.conf
               subPath: logging.conf
               readOnly: true
-            - name: pod-usr-share-novnc
-              mountPath: /usr/share/novnc
+            - name: nova-etc
+              mountPath: /etc/nova/api-paste.ini
+              subPath: api-paste.ini
+              readOnly: true
+            - name: nova-etc
+              mountPath: /etc/nova/policy.yaml
+              subPath: policy.yaml
+              readOnly: true
+            - name: nova-etc
+              mountPath: /etc/nova/api_audit_map.conf
+              subPath: api_audit_map.conf
+              readOnly: true
+            - name: nova-etc
+              # NOTE (Portdirect): We mount here to override Kollas
+              # custom sudoers file when using Kolla images, this
+              # location will also work fine for other images.
+              mountPath: /etc/sudoers.d/kolla_nova_sudoers
+              subPath: nova_sudoers
+              readOnly: true
+            - name: nova-etc
+              mountPath: /etc/nova/rootwrap.conf
+              subPath: rootwrap.conf
+              readOnly: true
+            - name: nova-etc
+              mountPath: /etc/nova/rootwrap.d/api-metadata.filters
+              subPath: api-metadata.filters
               readOnly: true
             - name: pod-shared
               mountPath: /tmp/pod-shared
+              readOnly: true
 
       volumes:
         - name: pod-tmp
@@ -202,7 +220,5 @@ spec:
           secret:
             secretName: nova-etc
             defaultMode: 0444
-        - name: pod-usr-share-novnc
-          emptyDir: {}
         - name: pod-shared
           emptyDir: {}

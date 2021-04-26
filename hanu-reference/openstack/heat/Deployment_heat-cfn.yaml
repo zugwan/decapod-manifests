@@ -1,21 +1,21 @@
-# Source: neutron/templates/deployment-server.yaml
+# Source: heat/templates/deployment-cfn.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: neutron-server
+  name: heat-cfn
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
-    release_group: neutron
-    application: neutron
-    component: server
+    release_group: heat
+    application: heat
+    component: cfn
 spec:
   replicas: 3
   selector:
     matchLabels:
-      release_group: neutron
-      application: neutron
-      component: server
+      release_group: heat
+      application: heat
+      component: cfn
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -25,17 +25,17 @@ spec:
   template:
     metadata:
       labels:
-        release_group: neutron
-        application: neutron
-        component: server
+        release_group: heat
+        application: heat
+        component: cfn
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
-        configmap-bin-hash: "5c7b05eb47e1f5bad4324b03a4e7646e24311e8c8f9be5116c41b3dbf18d8f3c"
-        configmap-etc-hash: "b338fd78050ed316c34c3e79fc7e68d2cf283caf8099ac22c4bdb5e907d68f72"
+        configmap-bin-hash: "b814469ae6753dfd221f5a931a0989174069b9cb80cdf5deaf7edd27c8bc09d9"
+        configmap-etc-hash: "8fbb7b3919e2541402e9064aea12dbc5b81033ff8663241f74a13f4412551843"
     spec:
+      serviceAccountName: heat-cfn
       securityContext:
-        runAsUser: 42435
-      serviceAccountName: neutron-server
+        runAsUser: 42418
       affinity:
         
         podAntiAffinity:
@@ -46,15 +46,15 @@ spec:
                   - key: release_group
                     operator: In
                     values:
-                    - neutron
+                    - heat
                   - key: application
                     operator: In
                     values:
-                    - neutron
+                    - heat
                   - key: component
                     operator: In
                     values:
-                    - server
+                    - cfn
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
@@ -63,7 +63,7 @@ spec:
       initContainers:
         
         - name: init
-          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
           imagePullPolicy: IfNotPresent  
           securityContext:
             allowPrivilegeEscalation: false
@@ -85,9 +85,9 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "openstack:mariadb,openstack:rabbitmq,openstack:memcached,openstack:keystone-api"
+              value: "openstack:mariadb,openstack:rabbitmq,openstack:keystone-api"
             - name: DEPENDENCY_JOBS
-              value: "neutron-db-sync,neutron-ks-user,neutron-ks-endpoints,neutron-rabbit-init"
+              value: "heat-db-sync,heat-rabbit-init,heat-ks-user,heat-trustee-ks-user,heat-domain-ks-user,heat-ks-endpoints,heat-bootstrap"
             - name: DEPENDENCY_DAEMONSET
               value: ""
             - name: DEPENDENCY_CONTAINER
@@ -101,78 +101,75 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: neutron-server
-          image: "docker.io/openstackhelm/neutron:stein-ubuntu_bionic"
+        - name: heat-cfn
+          image: "deploy001:5000/stein/ubuntu-source-heat-api:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
-          readinessProbe:
-            tcpSocket:
-              port: 9696
-          livenessProbe:
-            initialDelaySeconds: 60
-            tcpSocket:
-              port: 9696
+            readOnlyRootFilesystem: true
           command:
-            - /tmp/neutron-server.sh
+            - /tmp/heat-cfn.sh
             - start
           lifecycle:
             preStop:
               exec:
                 command:
-                  - /tmp/neutron-server.sh
+                  - /tmp/heat-cfn.sh
                   - stop
           ports:
-            - name: q-api
-              containerPort: 9696
+            - name: h-cfn
+              containerPort: 8000
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 30
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
-            - name: pod-var-neutron
-              mountPath: /var/lib/neutron
-            - name: neutron-bin
-              mountPath: /tmp/neutron-server.sh
-              subPath: neutron-server.sh
+            - name: pod-etc-heat
+              mountPath: /etc/heat
+            - name: heat-bin
+              mountPath: /tmp/heat-cfn.sh
+              subPath: heat-cfn.sh
               readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/neutron.conf
-              subPath: neutron.conf
-              readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/logging.conf
-              subPath: logging.conf
-              readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/api_audit_map.conf
-              subPath: api_audit_map.conf
-              readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/plugins/ml2/ml2_conf.ini
-              subPath: ml2_conf.ini
+            - name: heat-etc
+              mountPath: /etc/heat/heat.conf
+              subPath: heat.conf
               readOnly: true
             
-            - name: neutron-etc
-              mountPath: /etc/neutron/api-paste.ini
+            - name: heat-etc
+              mountPath: /etc/heat/logging.conf
+              subPath: logging.conf
+              readOnly: true
+            
+            - name: heat-etc
+              mountPath: /etc/heat/api-paste.ini
               subPath: api-paste.ini
               readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/policy.json
+            - name: heat-etc
+              mountPath: /etc/heat/policy.json
               subPath: policy.json
+              readOnly: true
+            - name: heat-etc
+              mountPath: /etc/heat/api_audit_map.conf
+              subPath: api_audit_map.conf
               readOnly: true
 
       volumes:
         - name: pod-tmp
           emptyDir: {}
-        - name: pod-var-neutron
+        - name: pod-etc-heat
           emptyDir: {}
-        - name: neutron-bin
+        - name: heat-bin
           configMap:
-            name: neutron-bin
+            name: heat-bin
             defaultMode: 0555
-        - name: neutron-etc
+        - name: heat-etc
           secret:
-            secretName: neutron-etc
+            secretName: heat-etc
             defaultMode: 0444

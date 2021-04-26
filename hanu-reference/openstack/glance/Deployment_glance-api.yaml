@@ -31,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "bfd669e36a5fe8c2192d53955aced162284839aafdbe007e08ea81a588f10f8f"
-        configmap-etc-hash: "51cae8bfe5e41fe9fc9417a8e9812f2d3295825b2e75c9fdb09fc9f91faf98c0"
+        configmap-etc-hash: "0d1f558ec479b4632482914c929d88fef0a6a4e60cb2f6ffc41631daff5a4b10"
     spec:
       serviceAccountName: glance-api
       securityContext:
@@ -63,7 +63,7 @@ spec:
       initContainers:
         
         - name: init
-          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
           imagePullPolicy: IfNotPresent  
           securityContext:
             allowPrivilegeEscalation: false
@@ -101,7 +101,7 @@ spec:
           volumeMounts:
             null
         - name: glance-perms
-          image: "docker.io/openstackhelm/glance:stein-ubuntu_bionic"
+          image: "deploy001:5000/stein/ubuntu-source-glance-api:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
@@ -120,7 +120,7 @@ spec:
               mountPath: /var/lib/glance/images
         
         - name: ceph-keyring-placement
-          image: "docker.io/openstackhelm/glance:stein-ubuntu_bionic"
+          image: "deploy001:5000/stein/ubuntu-source-glance-api:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           securityContext:
@@ -147,7 +147,7 @@ spec:
         
       containers:
         - name: glance-api
-          image: "docker.io/openstackhelm/glance:stein-ubuntu_bionic"
+          image: "deploy001:5000/stein/ubuntu-source-glance-api:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           

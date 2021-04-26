@@ -31,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "5c7b05eb47e1f5bad4324b03a4e7646e24311e8c8f9be5116c41b3dbf18d8f3c"
-        configmap-etc-hash: "b338fd78050ed316c34c3e79fc7e68d2cf283caf8099ac22c4bdb5e907d68f72"
+        configmap-etc-hash: "ebc7e8249587b41d86ffd8e3f063baf6523e2caeeb3e82a713222c3201ffec70"
     spec:
       securityContext:
         runAsUser: 42435
@@ -63,7 +63,7 @@ spec:
       initContainers:
         
         - name: init
-          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
           imagePullPolicy: IfNotPresent  
           securityContext:
             allowPrivilegeEscalation: false
@@ -102,7 +102,7 @@ spec:
             null
       containers:
         - name: neutron-server
-          image: "docker.io/openstackhelm/neutron:stein-ubuntu_bionic"
+          image: "deploy001:5000/stein/ubuntu-source-neutron-server:taco-0.1.0.onos"
           imagePullPolicy: IfNotPresent
           
           

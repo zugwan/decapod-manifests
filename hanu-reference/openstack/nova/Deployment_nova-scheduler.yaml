@@ -1,21 +1,21 @@
-# Source: neutron/templates/deployment-server.yaml
+# Source: nova/templates/deployment-scheduler.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: neutron-server
+  name: nova-scheduler
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
-    release_group: neutron
-    application: neutron
-    component: server
+    release_group: nova
+    application: nova
+    component: scheduler
 spec:
   replicas: 3
   selector:
     matchLabels:
-      release_group: neutron
-      application: neutron
-      component: server
+      release_group: nova
+      application: nova
+      component: scheduler
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -25,17 +25,18 @@ spec:
   template:
     metadata:
       labels:
-        release_group: neutron
-        application: neutron
-        component: server
+        release_group: nova
+        application: nova
+        component: scheduler
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
-        configmap-bin-hash: "5c7b05eb47e1f5bad4324b03a4e7646e24311e8c8f9be5116c41b3dbf18d8f3c"
-        configmap-etc-hash: "44d789acdd7f1018efc0971949aa7ce5781eabb95a3f6a18c98112531a88ca9c"
+        configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
+        configmap-etc-hash: "cf02fa4cc241f0d08e8514d155b6e4ed0ccc6acaf129a6d0946eebd9ae1ac884"
     spec:
+      serviceAccountName: nova-scheduler
       securityContext:
-        runAsUser: 42435
-      serviceAccountName: neutron-server
+        runAsUser: 42436
+        runAsUser: 42436
       affinity:
         
         podAntiAffinity:
@@ -46,20 +47,19 @@ spec:
                   - key: release_group
                     operator: In
                     values:
-                    - neutron
+                    - nova
                   - key: application
                     operator: In
                     values:
-                    - neutron
+                    - nova
                   - key: component
                     operator: In
                     values:
-                    - server
+                    - scheduler
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
         openstack-control-plane: enabled
-      terminationGracePeriodSeconds: 30
       initContainers:
         
         - name: init
@@ -85,9 +85,9 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "openstack:mariadb,openstack:rabbitmq,openstack:memcached,openstack:keystone-api"
+              value: "openstack:rabbitmq,openstack:mariadb,openstack:keystone-api,openstack:nova-api"
             - name: DEPENDENCY_JOBS
-              value: "neutron-db-sync,neutron-ks-user,neutron-ks-endpoints,neutron-rabbit-init"
+              value: "nova-db-sync,nova-rabbit-init"
             - name: DEPENDENCY_DAEMONSET
               value: ""
             - name: DEPENDENCY_CONTAINER
@@ -101,78 +101,73 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: neutron-server
-          image: "deploy001:5000/stein/ubuntu-source-neutron-server:taco-0.1.0.onos"
+        - name: nova-scheduler
+          image: "deploy001:5000/stein/ubuntu-source-nova-scheduler:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: true
           readinessProbe:
-            tcpSocket:
-              port: 9696
+            exec:
+              command:
+                - python
+                - /tmp/health-probe.py
+                - --config-file
+                - /etc/nova/nova.conf
+                - --service-queue-name
+                - scheduler
+            initialDelaySeconds: 80
+            periodSeconds: 90
+            timeoutSeconds: 70
           livenessProbe:
-            initialDelaySeconds: 60
-            tcpSocket:
-              port: 9696
+            exec:
+              command:
+                - python
+                - /tmp/health-probe.py
+                - --config-file
+                - /etc/nova/nova.conf
+                - --service-queue-name
+                - scheduler
+                - --liveness-probe
+            initialDelaySeconds: 120
+            periodSeconds: 90
+            timeoutSeconds: 70
           command:
-            - /tmp/neutron-server.sh
-            - start
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - /tmp/neutron-server.sh
-                  - stop
-          ports:
-            - name: q-api
-              containerPort: 9696
+            - /tmp/nova-scheduler.sh
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
-            - name: pod-var-neutron
-              mountPath: /var/lib/neutron
-            - name: neutron-bin
-              mountPath: /tmp/neutron-server.sh
-              subPath: neutron-server.sh
+            - name: nova-bin
+              mountPath: /tmp/nova-scheduler.sh
+              subPath: nova-scheduler.sh
               readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/neutron.conf
-              subPath: neutron.conf
+            - name: nova-bin
+              mountPath: /tmp/health-probe.py
+              subPath: health-probe.py
               readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/logging.conf
+            - name: nova-etc
+              mountPath: /etc/nova/nova.conf
+              subPath: nova.conf
+              readOnly: true
+            - name: nova-etc
+              mountPath: /etc/nova/logging.conf
               subPath: logging.conf
               readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/api_audit_map.conf
-              subPath: api_audit_map.conf
-              readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/plugins/ml2/ml2_conf.ini
-              subPath: ml2_conf.ini
-              readOnly: true
-            
-            - name: neutron-etc
-              mountPath: /etc/neutron/api-paste.ini
-              subPath: api-paste.ini
-              readOnly: true
-            - name: neutron-etc
-              mountPath: /etc/neutron/policy.json
-              subPath: policy.json
+            - name: nova-etc
+              mountPath: /etc/nova/policy.yaml
+              subPath: policy.yaml
               readOnly: true
 
       volumes:
         - name: pod-tmp
           emptyDir: {}
-        - name: pod-var-neutron
-          emptyDir: {}
-        - name: neutron-bin
+        - name: nova-bin
           configMap:
-            name: neutron-bin
+            name: nova-bin
             defaultMode: 0555
-        - name: neutron-etc
+        - name: nova-etc
           secret:
-            secretName: neutron-etc
+            secretName: nova-etc
             defaultMode: 0444

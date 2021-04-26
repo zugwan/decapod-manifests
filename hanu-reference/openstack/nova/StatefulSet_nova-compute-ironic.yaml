@@ -1,41 +1,38 @@
-# Source: heat/templates/deployment-api.yaml
+# Source: nova/templates/statefulset-compute-ironic.yaml
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: heat-api
+  name: nova-compute-ironic
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
-    release_group: heat
-    application: heat
-    component: api
+    release_group: nova
+    application: nova
+    component: compute
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
-      release_group: heat
-      application: heat
-      component: api
-  revisionHistoryLimit: 3
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 3
+      release_group: nova
+      application: nova
+      component: compute
+  serviceName: "ironic-api-compute"
   template:
     metadata:
       labels:
-        release_group: heat
-        application: heat
-        component: api
+        release_group: nova
+        application: nova
+        component: compute
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
-        configmap-bin-hash: "b814469ae6753dfd221f5a931a0989174069b9cb80cdf5deaf7edd27c8bc09d9"
-        configmap-etc-hash: "05951d43a75eec632ab5f5a7d5ade44d744c6f806c042a3fec1886efc08a7c67"
+        configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
+        configmap-etc-hash: "cf02fa4cc241f0d08e8514d155b6e4ed0ccc6acaf129a6d0946eebd9ae1ac884"
+        
     spec:
-      serviceAccountName: heat-api
+      serviceAccountName: nova-compute-ironic
       securityContext:
-        runAsUser: 42418
+        runAsUser: 42436
+        runAsUser: 42436
       affinity:
         
         podAntiAffinity:
@@ -46,20 +43,24 @@ spec:
                   - key: release_group
                     operator: In
                     values:
-                    - heat
+                    - nova
                   - key: application
                     operator: In
                     values:
-                    - heat
+                    - nova
                   - key: component
                     operator: In
                     values:
-                    - api
+                    - compute-ironic
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
         openstack-control-plane: enabled
-      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsUser: 0
+      hostNetwork: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
       initContainers:
         
         - name: init
@@ -85,9 +86,9 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "openstack:mariadb,openstack:rabbitmq,openstack:keystone-api"
+              value: "openstack:rabbitmq,openstack:glance-api,openstack:nova-api,openstack:neutron-server,openstack:ironic-api"
             - name: DEPENDENCY_JOBS
-              value: "heat-db-sync,heat-rabbit-init,heat-ks-user,heat-trustee-ks-user,heat-domain-ks-user,heat-ks-endpoints,heat-bootstrap"
+              value: "nova-db-sync,nova-rabbit-init"
             - name: DEPENDENCY_DAEMONSET
               value: ""
             - name: DEPENDENCY_CONTAINER
@@ -101,75 +102,53 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: heat-api
-          image: "deploy001:5000/stein/ubuntu-source-heat-api:taco-0.1.0"
+        - name: nova-compute-ironic
+          image: "deploy001:5000/stein/ubuntu-source-nova-compute-ironic:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
-          
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
           command:
-            - /tmp/heat-api.sh
-            - start
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - /tmp/heat-api.sh
-                  - stop
-          ports:
-            - name: h-api
-              containerPort: 8004
-          readinessProbe:
-            tcpSocket:
-              port: 8004
-          livenessProbe:
-            tcpSocket:
-              port: 8004
-            initialDelaySeconds: 30
+            - /tmp/nova-compute-ironic.sh
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
-            - name: pod-etc-heat
-              mountPath: /etc/heat
-            - name: heat-bin
-              mountPath: /tmp/heat-api.sh
-              subPath: heat-api.sh
+            - name: nova-bin
+              mountPath: /tmp/nova-compute-ironic.sh
+              subPath: nova-compute-ironic.sh
               readOnly: true
-            - name: heat-etc
-              mountPath: /etc/heat/heat.conf
-              subPath: heat.conf
+            - name: nova-etc
+              mountPath: /etc/nova/nova.conf
+              subPath: nova.conf
               readOnly: true
-            
-            - name: heat-etc
-              mountPath: /etc/heat/logging.conf
+            - name: nova-etc
+              mountPath: /etc/nova/logging.conf
               subPath: logging.conf
               readOnly: true
-            
-            - name: heat-etc
-              mountPath: /etc/heat/api-paste.ini
+            - name: nova-etc
+              mountPath: /etc/nova/nova-ironic.conf
+              subPath: nova-ironic.conf
+              readOnly: true
+            - name: nova-etc
+              mountPath: /etc/nova/api-paste.ini
               subPath: api-paste.ini
               readOnly: true
-            - name: heat-etc
-              mountPath: /etc/heat/policy.json
-              subPath: policy.json
+            - name: nova-etc
+              mountPath: /etc/nova/policy.yaml
+              subPath: policy.yaml
               readOnly: true
-            - name: heat-etc
-              mountPath: /etc/heat/api_audit_map.conf
-              subPath: api_audit_map.conf
-              readOnly: true
+            - name: varlibironic
+              mountPath: /var/lib/ironic
 
       volumes:
         - name: pod-tmp
           emptyDir: {}
-        - name: pod-etc-heat
-          emptyDir: {}
-        - name: heat-bin
+        - name: nova-bin
           configMap:
-            name: heat-bin
+            name: nova-bin
             defaultMode: 0555
-        - name: heat-etc
+        - name: nova-etc
           secret:
-            secretName: heat-etc
+            secretName: nova-etc
             defaultMode: 0444
+        - name: varlibironic
+          hostPath:
+            path: /var/lib/ironic

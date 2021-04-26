@@ -1,43 +1,42 @@
-# Source: heat/templates/deployment-cfn.yaml
+# Source: heat/templates/deployment-engine.yaml
 apiVersion: apps/v1
-kind: Deployment
 metadata:
-  name: heat-cfn
+  name: heat-engine
   annotations:
     "openstackhelm.openstack.org/release_uuid": ""
   labels:
     release_group: heat
     application: heat
-    component: cfn
+    component: engine
+kind: Deployment
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      release_group: heat
-      application: heat
-      component: cfn
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
       maxSurge: 3
+  replicas: 3
+  selector:
+    matchLabels:
+      release_group: heat
+      application: heat
+      component: engine
   template:
     metadata:
       labels:
         release_group: heat
         application: heat
-        component: cfn
+        component: engine
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "b814469ae6753dfd221f5a931a0989174069b9cb80cdf5deaf7edd27c8bc09d9"
-        configmap-etc-hash: "05951d43a75eec632ab5f5a7d5ade44d744c6f806c042a3fec1886efc08a7c67"
+        configmap-etc-hash: "3e320905b713fa43258c2a20d7691a52f0c3b080e653204c143af37db6517203"
     spec:
-      serviceAccountName: heat-cfn
+      serviceAccountName: heat-engine
       securityContext:
         runAsUser: 42418
-      affinity:
-        
+      affinity:        
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - podAffinityTerm:
@@ -54,7 +53,7 @@ spec:
                   - key: component
                     operator: In
                     values:
-                    - cfn
+                    - engine
               topologyKey: kubernetes.io/hostname
             weight: 10
       nodeSelector:
@@ -101,8 +100,8 @@ spec:
           volumeMounts:
             null
       containers:
-        - name: heat-cfn
-          image: "deploy001:5000/stein/ubuntu-source-heat-api:taco-0.1.0"
+        - name: heat-engine
+          image: "deploy001:5000/stein/ubuntu-source-heat-engine:taco-0.1.0"
           imagePullPolicy: IfNotPresent
           
           
@@ -110,32 +109,22 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
           command:
-            - /tmp/heat-cfn.sh
+            - /tmp/heat-engine.sh
             - start
           lifecycle:
             preStop:
               exec:
                 command:
-                  - /tmp/heat-cfn.sh
+                  - /tmp/heat-engine.sh
                   - stop
-          ports:
-            - name: h-cfn
-              containerPort: 8000
-          readinessProbe:
-            tcpSocket:
-              port: 8000
-          livenessProbe:
-            tcpSocket:
-              port: 8000
-            initialDelaySeconds: 30
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
             - name: pod-etc-heat
               mountPath: /etc/heat
             - name: heat-bin
-              mountPath: /tmp/heat-cfn.sh
-              subPath: heat-cfn.sh
+              mountPath: /tmp/heat-engine.sh
+              subPath: heat-engine.sh
               readOnly: true
             - name: heat-etc
               mountPath: /etc/heat/heat.conf
@@ -148,16 +137,8 @@ spec:
               readOnly: true
             
             - name: heat-etc
-              mountPath: /etc/heat/api-paste.ini
-              subPath: api-paste.ini
-              readOnly: true
-            - name: heat-etc
               mountPath: /etc/heat/policy.json
               subPath: policy.json
-              readOnly: true
-            - name: heat-etc
-              mountPath: /etc/heat/api_audit_map.conf
-              subPath: api_audit_map.conf
               readOnly: true
 
       volumes:

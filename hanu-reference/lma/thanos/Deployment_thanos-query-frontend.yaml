@@ -65,7 +65,7 @@ spec:
             - --query-range.response-cache-config-file=/conf/cache/config.yml
             - --query-range.split-interval=24h
             - --query-range.max-retries-per-request=3
-            - --query-frontend.log-queries-longer-than=60
+            - --query-frontend.log-queries-longer-than=60s
           ports:
             - name: http
               containerPort: 10902

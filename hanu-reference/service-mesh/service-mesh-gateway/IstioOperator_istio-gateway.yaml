@@ -4,7 +4,7 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
   name: istio-gateway
-  namespace: istio-system
+  namespace: istio-gateway
 spec:
   revision: 1-9-1
   profile: empty

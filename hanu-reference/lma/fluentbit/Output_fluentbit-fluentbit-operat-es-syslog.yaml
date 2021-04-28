@@ -11,7 +11,7 @@ spec:
   match: "syslog.*"
   es:
     index: syslog
-    host: eck-elasticsearch-es-http.lma.svc.cluster.local
+    host: eck-elasticsearch-es-http.lma.svc.prd-ahnsk.cluster
     port: 9200
     type: syslog
     httpUser:

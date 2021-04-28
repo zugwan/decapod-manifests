@@ -29,7 +29,7 @@ spec:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: ruler
       annotations:
-        checksum/ojbstore-configuration: 65b1f06d0c8f1122f17ecca03f3549982ad0c00f44d4478be3ad320a7e96352b
+        checksum/ojbstore-configuration: 0a709f914089b3d3b238b01c882c18c14ef0c52ac40c4370ac4e633ab4e1e799
         checksum/ruler-configuration: 50b03b1d76bcb40b1d9e71f788fa40b0924f101737b459feacabdc6a3d51f8a3
     spec:
       
@@ -68,8 +68,8 @@ spec:
             - --http-address=0.0.0.0:10902
             - --data-dir=/data
             - --eval-interval=1m
-            - --alertmanagers.url=http://fed-master-alertmanager.fed.svc.cluster.local:9093
-            - --query=dnssrv+_http._tcp.thanos-query.fed.svc.cluster.local
+            - --alertmanagers.url=http://fed-master-alertmanager.fed.svc.prd-ahnsk.cluster:9093
+            - --query=dnssrv+_http._tcp.thanos-query.fed.svc.prd-ahnsk.cluster
             - --label=replica="$(POD_NAME)"
             - --label=ruler_cluster=""
             - --alert.label-drop=replica

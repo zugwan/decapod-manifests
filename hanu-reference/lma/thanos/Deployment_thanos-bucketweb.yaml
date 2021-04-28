@@ -27,7 +27,7 @@ spec:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: bucketweb
       annotations:
-        checksum/ojbstore-configuration: 65b1f06d0c8f1122f17ecca03f3549982ad0c00f44d4478be3ad320a7e96352b
+        checksum/ojbstore-configuration: 0a709f914089b3d3b238b01c882c18c14ef0c52ac40c4370ac4e633ab4e1e799
     spec:
       
       serviceAccount: thanos-bucketweb

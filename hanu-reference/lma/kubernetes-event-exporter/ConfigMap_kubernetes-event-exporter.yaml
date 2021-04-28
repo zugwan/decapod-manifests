@@ -21,7 +21,7 @@ data:
     - name: "default"
       elasticsearch:
         hosts:
-        - https://eck-elasticsearch-es-http.lma.svc.cluster.local:9200
+        - https://eck-elasticsearch-es-http.lma.svc.prd-ahnsk.cluster:9200
         index: kube-events
         username: elastic
         password: tacoword

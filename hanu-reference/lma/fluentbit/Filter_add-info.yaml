@@ -13,4 +13,4 @@ spec:
   - modify:
       rules:
       - add:
-          cluster: cluster.local
+          cluster: prd-ahnsk.cluster

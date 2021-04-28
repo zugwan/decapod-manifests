@@ -33,7 +33,7 @@ spec:
         imagePullPolicy: "IfNotPresent"
         env:
           - name: ES_URL
-            value: https://eck-elasticsearch-es-http.lma.svc.cluster.local:9200
+            value: https://eck-elasticsearch-es-http.lma.svc.prd-ahnsk.cluster:9200
           - name: ES_USER
             value: elastic
           - name: ES_PW

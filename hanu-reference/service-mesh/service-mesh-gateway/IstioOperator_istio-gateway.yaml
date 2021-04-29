@@ -3,7 +3,7 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: istio-gateway
+  name: istio-gateway-test
   namespace: istio-gateway
 spec:
   revision: 1-9-1
@@ -14,7 +14,7 @@ spec:
         enabled: true
         namespace: istio-gateway
         label:
-          istio: ingressgateway-istio-ingressgateway
+          istio: ingressgateway-istio-ingressgateway-test
         k8s:
           resources:
             requests:
@@ -34,7 +34,16 @@ spec:
             scaleTargetRef:
               apiVersion: apps/v1
               kind: Deployment
-              name: istio-ingressgateway-istio-ingressgateway
+              name: istio-ingressgateway-istio-ingressgateway-test
           service:
             type: LoadBalancer
-
+  meshConfig:
+    accessLogFile: /dev/stdout
+    enableTracing: true
+    defaultConfig:
+      discoveryAddress: istiod-1-9-1.istio-system.svc:15012
+      #discoveryAddress: istiod.istio-system.svc:15012
+      tracing:
+        sampling: 100
+        zipkin:
+          address: jaeger-operator-jaeger-collector.lma.svc:9411

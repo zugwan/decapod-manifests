@@ -31,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
-        configmap-etc-hash: "42bcf2ef0e93337efa70e05e997628f2db93bf9d76c970566c35cf7a7e51b16c"
+        configmap-etc-hash: "ed1c24a5656f5b77ebe5a033613bcdef51c3cbd89cde8983eb5b01ad099e9f46"
     spec:
       serviceAccountName: nova-scheduler
       securityContext:

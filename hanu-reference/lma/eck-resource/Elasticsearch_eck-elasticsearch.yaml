@@ -10,7 +10,7 @@ spec:
       spec:
         ports:
         - name: http
-          nodePort: 30002
+          nodePort: 30011
           port: 9200
           targetPort: 9200
         type: NodePort

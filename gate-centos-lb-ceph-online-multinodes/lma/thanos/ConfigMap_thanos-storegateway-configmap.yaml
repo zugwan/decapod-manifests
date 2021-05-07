@@ -1,18 +1,17 @@
-# Source: thanos/templates/query-frontend/configmap.yaml
+# Source: thanos/templates/storegateway/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: thanos-query-frontend-configmap
+  name: thanos-storegateway-configmap
   labels:
     app.kubernetes.io/name: thanos
     helm.sh/chart: thanos-3.4.0
     app.kubernetes.io/instance: thanos
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/component: storegateway
 data:
   config.yml: |-
     type: IN-MEMORY
     config:
-      max_size: 512MB
-      max_size_items: 100
-      validity: 100s
+      max_size: 250MB
+      max_item_size: 125MB

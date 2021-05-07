@@ -27,7 +27,7 @@ spec:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: query-frontend
       annotations:
-        checksum/query-frontend-configuration: 5e8bd091514c7bb0ef0eae59e351fe0a80e39e8c55a504a15dd231a43fd1cbb4
+        checksum/query-frontend-configuration: 020b4296368667c237177fbd9602185a464b6fe07f27211aa65702d82cca56e2
     spec:
       
       serviceAccount: thanos-query-frontend

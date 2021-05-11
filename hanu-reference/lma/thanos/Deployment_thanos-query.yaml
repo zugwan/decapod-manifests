@@ -61,7 +61,7 @@ spec:
             - --grpc-address=0.0.0.0:10901
             - --http-address=0.0.0.0:10902
             - --query.replica-label=replica
-            - --store=dnssrv+_grpc._tcp.TO_BE_FIXED.lma.svc.cluster.local
+            - --store=dnssrv+_grpc._tcp.thanos-sidecars.lma.svc.cluster.local
             - --store=dnssrv+_grpc._tcp.thanos-storegateway.fed.svc.cluster.local
             - --store=dnssrv+_grpc._tcp.thanos-ruler.fed.svc.cluster.local
             - --store=prometheus-operated.lma.svc.cluster.local:10901

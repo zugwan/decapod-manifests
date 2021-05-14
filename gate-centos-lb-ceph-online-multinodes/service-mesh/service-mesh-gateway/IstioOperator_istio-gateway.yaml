@@ -1,0 +1,40 @@
+---
+# Source: service-mesh-resource/templates/istio-gateway.yaml
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio-gateway
+  namespace: istio-gateway
+spec:
+  revision: 1-9-1
+  profile: empty
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway-istio-ingressgateway
+        enabled: true
+        namespace: istio-gateway
+        label:
+          istio: ingressgateway-istio-ingressgateway
+        k8s:
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1024Mi
+            limits:
+              cpu: 2000m
+              memory: 2048Mi
+          hpaSpec:
+            maxReplicas: 10
+            minReplicas: 2
+            metrics:
+            - resource:
+                name: cpu
+                targetAverageUtilization: 80
+              type: Resource
+            scaleTargetRef:
+              apiVersion: apps/v1
+              kind: Deployment
+              name: istio-ingressgateway-istio-ingressgateway
+          service:
+            type: LoadBalancer
+

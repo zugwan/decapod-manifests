@@ -1,7 +1,0 @@
-# Source: mariadb/templates/configmap-ingress-conf.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mariadb-ingress-conf
-data:
-  worker-processes: auto

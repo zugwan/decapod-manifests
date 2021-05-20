@@ -4,17 +4,17 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
   name: istio-gateway
-  namespace: istio-gateway
+  namespace: istio-system
 spec:
   revision: 1-9-1
   profile: empty
   components:
     ingressGateways:
-      - name: istio-ingressgateway-istio-ingressgateway
+      - name: istio-ingressgateway-default
         enabled: true
-        namespace: istio-gateway
+        namespace: istio-system
         label:
-          istio: ingressgateway-istio-ingressgateway
+          istio: ingressgateway-default
         k8s:
           resources:
             requests:
@@ -34,7 +34,7 @@ spec:
             scaleTargetRef:
               apiVersion: apps/v1
               kind: Deployment
-              name: istio-ingressgateway-istio-ingressgateway
+              name: istio-ingressgateway-default
           service:
-            type: LoadBalancer
+            type: NodePort
 

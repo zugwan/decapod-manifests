@@ -29,7 +29,7 @@ spec:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: ruler
       annotations:
-        checksum/ojbstore-configuration: 65b1f06d0c8f1122f17ecca03f3549982ad0c00f44d4478be3ad320a7e96352b
+        checksum/ojbstore-configuration: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/ruler-configuration: 50b03b1d76bcb40b1d9e71f788fa40b0924f101737b459feacabdc6a3d51f8a3
     spec:
       
@@ -68,7 +68,7 @@ spec:
             - --http-address=0.0.0.0:10902
             - --data-dir=/data
             - --eval-interval=1m
-            - --alertmanagers.url=http://fed-master-alertmanager.fed.svc.cluster.local:9093
+            - --alertmanagers.url=http://fed-master-alertmanager.lma.svc.cluster.local:9093
             - --query=dnssrv+_http._tcp.thanos-query.fed.svc.cluster.local
             - --label=replica="$(POD_NAME)"
             - --label=ruler_cluster=""
@@ -115,7 +115,7 @@ spec:
             name: thanos-ruler-configmap
         - name: objstore-config
           secret:
-            secretName: thanos-objstore-secret
+            secretName: taco-objstore-secret
   volumeClaimTemplates:
     - metadata:
         name: data

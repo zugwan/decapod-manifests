@@ -6,7 +6,7 @@ metadata:
   namespace: lma
 subsets:
 - addresses:
-  - ip: 172.16.50.114
+  - ip: 127.0.0.1
   ports:
     - port: 30901
 

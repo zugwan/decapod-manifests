@@ -23,7 +23,10 @@ spec:
   logFormat: "logfmt"
   logLevel:  "info"
   retention: "120h"
-  alertmanagerConfigSelector: {}
+  alertmanagerConfigSelector:
+    matchLabels:
+      alertmanagerConfig: example
+
   alertmanagerConfigNamespaceSelector: {}
   routePrefix: "/"
   securityContext:

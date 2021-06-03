@@ -22,4 +22,8 @@ spec:
   values:
     global:
       istioNamespace: istio-system
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: false
 

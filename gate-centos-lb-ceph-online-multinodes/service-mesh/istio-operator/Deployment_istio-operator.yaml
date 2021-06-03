@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: istio-system
+  namespace: istio-operator
   name: istio-operator
 spec:
   replicas: 1
@@ -41,15 +41,15 @@ spec:
               memory: 128Mi
           env:
             - name: WATCH_NAMESPACE
-              value: "istio-system"
+              value: "istio-system,istio-gateway"
             - name: LEADER_ELECTION_NAMESPACE
-              value: "istio-system"
+              value: "istio-operator"
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "istio-system"
+              value: "istio-operator"
             - name: WAIT_FOR_RESOURCES_TIMEOUT
               value: "300s"
             - name: REVISION

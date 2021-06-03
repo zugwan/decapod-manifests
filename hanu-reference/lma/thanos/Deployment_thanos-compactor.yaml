@@ -27,7 +27,7 @@ spec:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: compactor
       annotations:
-        checksum/ojbstore-configuration: 65b1f06d0c8f1122f17ecca03f3549982ad0c00f44d4478be3ad320a7e96352b
+        checksum/ojbstore-configuration: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
     spec:
       
       serviceAccount: thanos-compactor
@@ -98,7 +98,7 @@ spec:
       volumes:
         - name: objstore-config
           secret:
-            secretName: thanos-objstore-secret
+            secretName: taco-objstore-secret
         - name: data
           persistentVolumeClaim:
             claimName: thanos-compactor

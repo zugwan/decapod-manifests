@@ -14,10 +14,11 @@ metadata:
 spec:
   ports:
   - name: web
+    nodePort: 30111
     port: 9093
     targetPort: 9093
     protocol: TCP
   selector:
     app: alertmanager
     alertmanager: fed-master-alertmanager
-  type: "ClusterIP"
+  type: "NodePort"

@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: istio-operator
-  name: istio-operator
+  name: istio-operator-1-9-1
 spec:
   replicas: 1
   selector:
@@ -14,7 +14,7 @@ spec:
       labels:
         name: istio-operator
     spec:
-      serviceAccountName: istio-operator
+      serviceAccountName: istio-operator-1-9-1
       containers:
         - name: istio-operator
           image: gcr.io/istio-testing/operator:latest
@@ -53,5 +53,5 @@ spec:
             - name: WAIT_FOR_RESOURCES_TIMEOUT
               value: "300s"
             - name: REVISION
-              value: ""
+              value: "1-9-1"
 

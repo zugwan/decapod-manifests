@@ -5,7 +5,7 @@ metadata:
   namespace: istio-operator
   labels:
     name: istio-operator
-  name: istio-operator
+  name: istio-operator-1-9-1
 spec:
   ports:
   - name: http-metrics

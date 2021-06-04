@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: istio-operator
+  name: istio-operator-1-9-1
 rules:
 # istio groups
 - apiGroups:

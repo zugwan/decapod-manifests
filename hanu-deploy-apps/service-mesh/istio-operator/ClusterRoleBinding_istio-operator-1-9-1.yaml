@@ -2,12 +2,12 @@
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: istio-operator
+  name: istio-operator-1-9-1
 subjects:
 - kind: ServiceAccount
-  name: istio-operator
+  name: istio-operator-1-9-1
   namespace: istio-operator
 roleRef:
   kind: ClusterRole
-  name: istio-operator
+  name: istio-operator-1-9-1
   apiGroup: rbac.authorization.k8s.io

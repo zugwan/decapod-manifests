@@ -34,11 +34,11 @@ spec:
           imagePullPolicy: IfNotPresent
           resources:
             limits:
-              cpu: 200m
-              memory: 256Mi
+              cpu: "4"
+              memory: 4Gi
             requests:
-              cpu: 50m
-              memory: 128Mi
+              cpu: "2"
+              memory: 2Gi
           env:
             - name: WATCH_NAMESPACE
               value: "istio-system,istio-gateway"

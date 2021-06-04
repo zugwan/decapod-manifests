@@ -13,3 +13,4 @@ spec:
   - port: service
     interval: 10s
     path: "/metrics"
+

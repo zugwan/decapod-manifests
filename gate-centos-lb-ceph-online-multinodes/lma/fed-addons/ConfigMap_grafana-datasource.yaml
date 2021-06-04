@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-datasource
-  namespace: fed
+  namespace: lma
   labels:
     grafana_datasource: "1"
     app: grafana

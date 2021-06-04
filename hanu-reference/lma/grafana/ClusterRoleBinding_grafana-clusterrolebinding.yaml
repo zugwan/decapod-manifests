@@ -12,7 +12,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: grafana
-    namespace: fed
+    namespace: lma
 roleRef:
   kind: ClusterRole
   name: grafana-clusterrole

@@ -1,6 +1,0 @@
----
-# Source: lma-addons/templates/namespace.yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: fed

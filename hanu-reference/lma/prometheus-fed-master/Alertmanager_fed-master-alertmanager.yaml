@@ -3,7 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: Alertmanager
 metadata:
   name: fed-master-alertmanager
-  namespace: fed
+  namespace: lma
   labels:
     app: kube-prometheus-stack-alertmanager
     
@@ -16,7 +16,7 @@ spec:
   replicas: 1
   listenLocal: false
   serviceAccountName: fed-master-alertmanager
-  externalUrl: http://fed-master-alertmanager.fed:9093
+  externalUrl: http://fed-master-alertmanager.lma:9093
   nodeSelector:
     taco-lma: enabled
   paused: false

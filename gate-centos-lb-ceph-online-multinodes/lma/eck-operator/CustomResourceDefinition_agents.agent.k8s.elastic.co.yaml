@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/name: 'eck-operator-crds'
     app.kubernetes.io/version: '1.6.0'
     helm.sh/chart: 'eck-operator-crds-1.6.0'
-  name: beats.beat.k8s.elastic.co
+  name: agents.agent.k8s.elastic.co
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.health
@@ -25,33 +25,29 @@ spec:
     description: Expected nodes
     name: expected
     type: integer
-  - JSONPath: .spec.type
-    description: Beat type
-    name: type
-    type: string
   - JSONPath: .status.version
-    description: Beat version
+    description: Agent version
     name: version
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: age
     type: date
-  group: beat.k8s.elastic.co
+  group: agent.k8s.elastic.co
   names:
     categories:
     - elastic
-    kind: Beat
-    listKind: BeatList
-    plural: beats
+    kind: Agent
+    listKind: AgentList
+    plural: agents
     shortNames:
-    - beat
-    singular: beat
+    - agent
+    singular: agent
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Beat is the Schema for the Beats API.
+      description: Agent is the Schema for the Agents API.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -66,16 +62,16 @@ spec:
         metadata:
           type: object
         spec:
-          description: BeatSpec defines the desired state of a Beat.
+          description: AgentSpec defines the desired state of the Agent
           properties:
             config:
-              description: Config holds the Beat configuration. At most one of [`Config`,
+              description: Config holds the Agent configuration. At most one of [`Config`,
                 `ConfigRef`] can be specified.
               type: object
             configRef:
               description: ConfigRef contains a reference to an existing Kubernetes
-                Secret holding the Beat configuration. Beat settings must be specified
-                as yaml, under a single "beat.yml" entry. At most one of [`Config`,
+                Secret holding the Agent configuration. Agent settings must be specified
+                as yaml, under a single "agent.yml" entry. At most one of [`Config`,
                 `ConfigRef`] can be specified.
               properties:
                 secretName:
@@ -83,9 +79,8 @@ spec:
                   type: string
               type: object
             daemonSet:
-              description: DaemonSet specifies the Beat should be deployed as a DaemonSet,
+              description: DaemonSet specifies the Agent should be deployed as a DaemonSet,
                 and allows providing its spec. Cannot be used along with `deployment`.
-                If both are absent a default for the Type is used.
               properties:
                 updateStrategy:
                   description: DaemonSetUpdateStrategy is a struct used to control
@@ -124,9 +119,9 @@ spec:
                   type: object
               type: object
             deployment:
-              description: Deployment specifies the Beat should be deployed as a Deployment,
-                and allows providing its spec. Cannot be used along with `daemonSet`.
-                If both are absent a default for the Type is used.
+              description: Deployment specifies the Agent should be deployed as a
+                Deployment, and allows providing its spec. Cannot be used along with
+                `daemonSet`.
               properties:
                 replicas:
                   format: int32
@@ -180,58 +175,41 @@ spec:
                       type: string
                   type: object
               type: object
-            elasticsearchRef:
-              description: ElasticsearchRef is a reference to an Elasticsearch cluster
-                running in the same Kubernetes cluster.
-              properties:
-                name:
-                  description: Name of the Kubernetes object.
-                  type: string
-                namespace:
-                  description: Namespace of the Kubernetes object. If empty, defaults
-                    to the current namespace.
-                  type: string
-                serviceName:
-                  description: ServiceName is the name of an existing Kubernetes service
-                    which will be used to make requests to the referenced object.
-                    It has to be in the same namespace as the referenced resource.
-                    If left empty the default HTTP service of the referenced resource
-                    will be used.
-                  type: string
-              required:
-              - name
-              type: object
+            elasticsearchRefs:
+              description: ElasticsearchRefs is a reference to a list of Elasticsearch
+                clusters running in the same Kubernetes cluster. Due to existing limitations,
+                only a single ES cluster is currently supported.
+              items:
+                properties:
+                  name:
+                    description: Name of the Kubernetes object.
+                    type: string
+                  namespace:
+                    description: Namespace of the Kubernetes object. If empty, defaults
+                      to the current namespace.
+                    type: string
+                  outputName:
+                    type: string
+                  serviceName:
+                    description: ServiceName is the name of an existing Kubernetes
+                      service which will be used to make requests to the referenced
+                      object. It has to be in the same namespace as the referenced
+                      resource. If left empty the default HTTP service of the referenced
+                      resource will be used.
+                    type: string
+                required:
+                - name
+                type: object
+              type: array
             image:
-              description: Image is the Beat Docker image to deploy. Version and Type
-                have to match the Beat in the image.
+              description: Image is the Agent Docker image to deploy. Version has
+                to match the Agent in the image.
               type: string
-            kibanaRef:
-              description: KibanaRef is a reference to a Kibana instance running in
-                the same Kubernetes cluster. It allows automatic setup of dashboards
-                and visualizations.
-              properties:
-                name:
-                  description: Name of the Kubernetes object.
-                  type: string
-                namespace:
-                  description: Namespace of the Kubernetes object. If empty, defaults
-                    to the current namespace.
-                  type: string
-                serviceName:
-                  description: ServiceName is the name of an existing Kubernetes service
-                    which will be used to make requests to the referenced object.
-                    It has to be in the same namespace as the referenced resource.
-                    If left empty the default HTTP service of the referenced resource
-                    will be used.
-                  type: string
-              required:
-              - name
-              type: object
             secureSettings:
               description: SecureSettings is a list of references to Kubernetes Secrets
-                containing sensitive configuration options for the Beat. Secrets data
-                can be then referenced in the Beat config using the Secret's keys
-                or as specified in `Entries` field of each SecureSetting.
+                containing sensitive configuration options for the Agent. Secrets
+                data can be then referenced in the Agent config using the Secret's
+                keys or as specified in `Entries` field of each SecureSetting.
               items:
                 description: SecretSource defines a data source based on a Kubernetes
                   Secret.
@@ -267,41 +245,34 @@ spec:
               type: array
             serviceAccountName:
               description: ServiceAccountName is used to check access from the current
-                resource to Elasticsearch resource in a different namespace. Can only
-                be used if ECK is enforcing RBAC on references.
-              type: string
-            type:
-              description: Type is the type of the Beat to deploy (filebeat, metricbeat,
-                heartbeat, auditbeat, journalbeat, packetbeat, etc.). Any string can
-                be used, but well-known types will have the image field defaulted
-                and have the appropriate Elasticsearch roles created automatically.
-                It also allows for dashboard setup when combined with a `KibanaRef`.
-              maxLength: 20
-              pattern: '[a-zA-Z0-9-]+'
+                resource to an Elasticsearch resource in a different namespace. Can
+                only be used if ECK is enforcing RBAC on references.
               type: string
             version:
-              description: Version of the Beat.
+              description: Version of the Agent.
               type: string
           required:
-          - type
           - version
           type: object
         status:
-          description: BeatStatus defines the observed state of a Beat.
+          description: AgentStatus defines the observed state of the Agent
           properties:
             availableNodes:
               format: int32
               type: integer
-            elasticsearchAssociationStatus:
-              description: AssociationStatus is the status of an association resource.
-              type: string
+            elasticsearchAssociationsStatus:
+              additionalProperties:
+                description: AssociationStatus is the status of an association resource.
+                type: string
+              description: AssociationStatusMap is the map of association's namespaced
+                name string to its AssociationStatus. For resources that have a single
+                Association of a given type (eg. single ES reference), this map will
+                contain a single entry.
+              type: object
             expectedNodes:
               format: int32
               type: integer
             health:
-              type: string
-            kibanaAssociationStatus:
-              description: AssociationStatus is the status of an association resource.
               type: string
             version:
               description: 'Version of the stack resource currently running. During
@@ -309,9 +280,9 @@ spec:
                 specifies the lowest version currently running.'
               type: string
           type: object
-  version: v1beta1
+  version: v1alpha1
   versions:
-  - name: v1beta1
+  - name: v1alpha1
     served: true
     storage: true
 status:

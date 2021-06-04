@@ -3,7 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: dev-federate
-  namespace: fed
+  namespace: lma
   labels:
     app: dev-federate
 spec:

@@ -17,7 +17,7 @@ data:
       - module: prometheus
         metricsets: ['query']
         period: 30s
-        hosts: [thanos-query-frontend.fed.svc.cluster.local:9090]
+        hosts: [thanos-query-frontend.lma.svc.cluster.local:9090]
         paths: 
         - name: 'metrics_total_count'
           path: '/api/v1/query'

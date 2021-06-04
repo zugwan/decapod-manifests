@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/version: "7.1.1"
     app.kubernetes.io/managed-by: Helm
   name: grafana-config-dashboards
-  namespace: fed
+  namespace: lma
 data:
   provider.yaml: |-
     apiVersion: 1

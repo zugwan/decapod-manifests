@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: thanos-minio
-  namespace: "fed"
+  namespace: "lma"
   labels:
     app.kubernetes.io/name: minio
     helm.sh/chart: minio-6.0.0

@@ -46,7 +46,7 @@ spec:
                     app.kubernetes.io/instance: thanos
                     app.kubernetes.io/component: ruler
                 namespaces:
-                  - fed
+                  - lma
                 topologyKey: kubernetes.io/hostname
               weight: 1
         nodeAffinity:
@@ -69,7 +69,7 @@ spec:
             - --data-dir=/data
             - --eval-interval=1m
             - --alertmanagers.url=http://fed-master-alertmanager.lma.svc.cluster.local:9093
-            - --query=dnssrv+_http._tcp.thanos-query.fed.svc.cluster.local
+            - --query=dnssrv+_http._tcp.thanos-query.lma.svc.cluster.local
             - --label=replica="$(POD_NAME)"
             - --label=ruler_cluster=""
             - --alert.label-drop=replica

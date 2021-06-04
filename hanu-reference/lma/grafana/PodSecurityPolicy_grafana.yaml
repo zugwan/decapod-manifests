@@ -4,7 +4,7 @@ apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: grafana
-  namespace: fed
+  namespace: lma
   labels:
     helm.sh/chart: grafana-5.5.7
     app.kubernetes.io/name: grafana

@@ -3,7 +3,7 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: fed-master-alertmanager
-  namespace: fed
+  namespace: lma
   labels:
     app: kube-prometheus-stack-alertmanager
     

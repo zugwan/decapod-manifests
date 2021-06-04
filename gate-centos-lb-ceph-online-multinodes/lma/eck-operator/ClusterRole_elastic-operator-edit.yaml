@@ -8,8 +8,8 @@ metadata:
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     
     control-plane: elastic-operator
-    app.kubernetes.io/version: "1.3.1"
-    helm.sh/chart: eck-operator-1.3.1
+    app.kubernetes.io/version: "1.6.0"
+    helm.sh/chart: eck-operator-1.6.0
     app.kubernetes.io/managed-by: Helm
 rules:
   - apiGroups: ["elasticsearch.k8s.elastic.co"]
@@ -26,4 +26,10 @@ rules:
     verbs: ["create", "delete", "deletecollection", "patch", "update"]
   - apiGroups: ["beat.k8s.elastic.co"]
     resources: ["beats"]
+    verbs: ["create", "delete", "deletecollection", "patch", "update"]
+  - apiGroups: ["agent.k8s.elastic.co"]
+    resources: ["agents"]
+    verbs: ["create", "delete", "deletecollection", "patch", "update"]
+  - apiGroups: ["maps.k8s.elastic.co"]
+    resources: ["elasticmapsservers"]
     verbs: ["create", "delete", "deletecollection", "patch", "update"]

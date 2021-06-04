@@ -29,7 +29,7 @@ spec:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: storegateway
       annotations:
-        checksum/ojbstore-configuration: 65b1f06d0c8f1122f17ecca03f3549982ad0c00f44d4478be3ad320a7e96352b
+        checksum/ojbstore-configuration: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/storegateway-configuration: c2f61eae152307ee30ee16bd35cacbb9a34481a1f5d1889a824dde63b50b5453
     spec:
       
@@ -46,7 +46,7 @@ spec:
                     app.kubernetes.io/instance: thanos
                     app.kubernetes.io/component: storegateway
                 namespaces:
-                  - fed
+                  - lma
                 topologyKey: kubernetes.io/hostname
               weight: 1
         nodeAffinity:
@@ -101,7 +101,7 @@ spec:
       volumes:
         - name: objstore-config
           secret:
-            secretName: thanos-objstore-secret
+            secretName: taco-objstore-secret
         - name: cache-config
           configMap:
             name: thanos-storegateway-configmap

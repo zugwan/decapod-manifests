@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
   annotations:
     "helm.sh/hook": test-success
-  namespace: fed
+  namespace: lma
 spec:
   serviceAccountName: grafana-test
   containers:

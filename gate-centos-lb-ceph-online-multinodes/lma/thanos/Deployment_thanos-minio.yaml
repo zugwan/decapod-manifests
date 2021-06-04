@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: thanos-minio
-  namespace: "fed"
+  namespace: "lma"
   labels:
     app.kubernetes.io/name: minio
     helm.sh/chart: minio-6.0.0
@@ -24,7 +24,7 @@ spec:
         app.kubernetes.io/instance: thanos
         app.kubernetes.io/managed-by: Helm
       annotations:
-        checksum/credentials-secret: 8aca8e8e598fece5bd443592bb00b8674a482a8b56bacd2ff793608e31cc21ce
+        checksum/credentials-secret: 84ff4b8abe403acabdbde3525a332378399ccf8b69c1940aded3b5f079b41bd1
     spec:
       serviceAccountName: thanos-minio
       
@@ -39,7 +39,7 @@ spec:
                     app.kubernetes.io/name: minio
                     app.kubernetes.io/instance: thanos
                 namespaces:
-                  - fed
+                  - lma
                 topologyKey: kubernetes.io/hostname
               weight: 1
         nodeAffinity:

@@ -5,7 +5,7 @@ metadata:
   name: thanos-sidecars
   namespace: lma
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - port: 30901
       targetPort: http

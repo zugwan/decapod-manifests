@@ -9,7 +9,7 @@ spec:
     service:
       spec:
         ports:
-        - name: http
+        - name: https
           nodePort: 30011
           port: 9200
           targetPort: 9200

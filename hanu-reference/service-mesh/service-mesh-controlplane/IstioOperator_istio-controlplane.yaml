@@ -1,4 +1,3 @@
----
 # Source: service-mesh-resource/templates/istio-controlplane.yaml
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator

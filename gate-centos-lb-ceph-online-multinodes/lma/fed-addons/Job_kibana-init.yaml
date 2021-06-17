@@ -1,0 +1,24 @@
+# Source: lma-addons/templates/kibana-init/init.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kibana-init
+  namespace: lma
+  annotations:
+    "helm.sh/hook-weight": "3"
+spec:
+  template:
+    metadata:
+      name: kibana-init
+    spec:
+      containers:
+        - name: init
+          image: "sktdev/kibana-init:v4"
+          env:
+            - name: KIBANA_URL
+              value: http://eck-kibana-dashboard-kb-http.lma.svc.cluster.local:5601
+            - name: KIBANA_USER
+              value: elastic
+            - name: KIBANA_PASSWORD
+              value: tacoword
+      restartPolicy: OnFailure

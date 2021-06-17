@@ -1,0 +1,15 @@
+# Source: fluentbit-operator/templates/fluentbit/filters.yaml
+apiVersion: logging.kubesphere.io/v1alpha2
+kind: Filter
+metadata:
+  name: simplify
+  namespace: lma
+  labels:
+    logging.kubesphere.io/enabled: "true"
+    app.kubernetes.io/version: v0.0.1
+spec:
+  match: "m_*"
+  filters:
+  - nest:
+      operation: lift
+      nestedUnder: kubernetes

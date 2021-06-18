@@ -12,7 +12,7 @@ metadata:
     heritage: "Helm"
 spec:
   type: NodePort
-  clusterIP: 
+  clusterIP: None
   ports:
   - name: grpc
     port: 10901

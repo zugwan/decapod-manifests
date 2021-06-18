@@ -1,3 +1,4 @@
+---
 # Source: lma-addons/templates/grafana-dashboard/configmaps-datasources.yaml
 apiVersion: v1
 kind: ConfigMap

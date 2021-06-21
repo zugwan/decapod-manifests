@@ -1,0 +1,79 @@
+# Source: kiali-operator/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kiali-operator
+  namespace: istio-system
+  labels:
+    helm.sh/chart: kiali-operator-1.30.0
+    app: kiali-operator
+    app.kubernetes.io/name: kiali-operator
+    app.kubernetes.io/instance: kiali-operator
+    version: "v1.30.0"
+    app.kubernetes.io/version: "v1.30.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: "kiali-operator"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kiali-operator
+      app.kubernetes.io/instance: kiali-operator
+  template:
+    metadata:
+      name: kiali-operator
+      namespace: istio-system
+      labels:
+        # required for the operator SDK metric service selector
+        name: kiali-operator
+        helm.sh/chart: kiali-operator-1.30.0
+        app: kiali-operator
+        app.kubernetes.io/name: kiali-operator
+        app.kubernetes.io/instance: kiali-operator
+        version: "v1.30.0"
+        app.kubernetes.io/version: "v1.30.0"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: "kiali-operator"
+      annotations:
+        prometheus.io/scrape: "true"
+    spec:
+      serviceAccountName: kiali-operator
+      containers:
+      - name: operator
+        image: "quay.io/kiali/kiali-operator:v1.30.0"
+        imagePullPolicy: Always
+        args:
+        - "--zap-level=info"
+        volumeMounts:
+        - mountPath: /tmp/ansible-operator/runner
+          name: runner
+        env:
+        - name: WATCH_NAMESPACE
+          value: ""
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: OPERATOR_NAME
+          value: kiali-operator
+        - name: ANSIBLE_DEBUG_LOGS
+          value: "true"
+        - name: ANSIBLE_VERBOSITY_KIALI_KIALI_IO
+          value: "1"
+        - name: ANSIBLE_CONFIG
+          value: "/etc/ansible/ansible.cfg"
+        ports:
+        - name: http-metrics
+          containerPort: 8383
+        - name: cr-metrics
+          containerPort: 8686
+      volumes:
+      - name: runner
+        emptyDir: {}
+      affinity:
+        {}
+...

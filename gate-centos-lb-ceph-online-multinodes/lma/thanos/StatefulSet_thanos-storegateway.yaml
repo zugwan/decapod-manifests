@@ -114,5 +114,5 @@ spec:
         resources:
           requests:
             storage: "8Gi"
-        storageClassName: ceph
+        storageClassName: taco-storage
 

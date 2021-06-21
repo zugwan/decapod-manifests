@@ -66,9 +66,9 @@ spec:
         resources:
           requests:
             storage: 10Gi
-        storageClassName: rbd
+        storageClassName: taco-storage
   thanos:
-    minTime: 2h
+    minTime: -3h
     objectStorageConfig:
       key: objstore.yml
       name: taco-objstore-secret

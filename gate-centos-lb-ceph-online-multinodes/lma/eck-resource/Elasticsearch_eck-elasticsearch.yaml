@@ -46,7 +46,7 @@ spec:
           resources:
             requests:
               storage: 0.5Gi
-          storageClassName: ceph
+          storageClassName: taco-storage
   - name: hotdata
     count: 3
     config:
@@ -76,7 +76,7 @@ spec:
           resources:
             requests:
               storage: 100Gi
-          storageClassName: ceph
+          storageClassName: taco-storage
   - name: master
     count: 3
     config:
@@ -105,4 +105,4 @@ spec:
           resources:
             requests:
               storage: 2Gi
-          storageClassName: ceph
+          storageClassName: taco-storage

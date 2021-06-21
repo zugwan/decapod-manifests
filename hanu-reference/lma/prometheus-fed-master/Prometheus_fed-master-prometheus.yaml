@@ -65,5 +65,5 @@ spec:
         resources:
           requests:
             storage: 20Gi
-        storageClassName: rbd
+        storageClassName: taco-storage
   portName: web

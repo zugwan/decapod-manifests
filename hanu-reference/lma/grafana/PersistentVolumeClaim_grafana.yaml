@@ -18,4 +18,4 @@ spec:
   resources:
     requests:
       storage: "10G"
-  storageClassName: rbd
+  storageClassName: taco-storage

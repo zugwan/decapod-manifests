@@ -47,7 +47,7 @@ spec:
           resources:
             requests:
               storage: 10Gi
-          storageClassName: rbd
+          storageClassName: taco-storage
   - name: master
     count: 1
     config:
@@ -76,4 +76,4 @@ spec:
           resources:
             requests:
               storage: 1Gi
-          storageClassName: rbd
+          storageClassName: taco-storage

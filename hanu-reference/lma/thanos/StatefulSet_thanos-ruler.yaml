@@ -125,4 +125,4 @@ spec:
         resources:
           requests:
             storage: "8Gi"
-        storageClassName: rbd
+        storageClassName: taco-storage

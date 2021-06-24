@@ -8,7 +8,6 @@ spec:
   hub: gcr.io/istio-testing
   tag: 1.11-alpha.aa439f6e4772aa52acafa11ac7a5fbdfbb160357
   revision: 1-9-1
-  namespace: istio-system
   profile: default
   meshConfig:
     accessLogFile: /dev/stdout
@@ -16,7 +15,7 @@ spec:
     enablePrometheusMerge: true
     enableAutoMtls: false
     extensionProviders:
-      name: jaeger-collector
+    - name: jaeger-collector
       envoyExtAuthzGrpc:
         service: jaeger-operator-jaeger-collector.istio-system.svc:9411
         port: 14250

@@ -15,7 +15,8 @@ spec:
       istioNamespace: istio-system
       logging:
         level: "default:info"
-  components:ingressGateways:
+  components:
+    ingressGateways:
     - name: istio-ingress-gateway-1-9-1
       namespace: istio-system
       enabled: true

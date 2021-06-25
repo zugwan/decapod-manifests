@@ -27,9 +27,9 @@ spec:
         sampling: 100
   values:
     global:
-      istioNamespace: istio-system
       logging:
         level: "default:info"
+      istioNamespace: istio-system
   components:
     pilot:
       k8s:
@@ -44,6 +44,5 @@ spec:
           maxReplicas: 10
           minReplicas: 2
         nodeSelector:
-          taco-lma: enabled
-  taco-servicemesh-control: enabled
+          taco-servicemesh-control: enabled
 

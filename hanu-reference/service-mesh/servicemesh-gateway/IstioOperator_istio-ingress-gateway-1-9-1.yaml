@@ -1,0 +1,67 @@
+---
+# Source: servicemesh-istio-resource/templates/istio-gateway.yaml
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio-ingress-gateway-1-9-1
+  namespace: istio-system
+spec:
+  hub: gcr.io/istio-testing
+  tag: 1.11-alpha.aa439f6e4772aa52acafa11ac7a5fbdfbb160357
+  revision: 1-9-1
+  profile: empty
+  values:
+    global:
+      istioNamespace: istio-system
+      logging:
+        level: "default:info"
+  components:ingressGateways:
+    - name: istio-ingress-gateway-1-9-1
+      namespace: istio-system
+      enabled: true
+      label:
+        istio: istio-ingress-gateway
+        revision: 1-9-1
+      k8s:
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 1024Mi
+          limits:
+            cpu: 4000m
+            memory: 4096Mi
+        hpaSpec:
+          maxReplicas: 10
+          minReplicas: 1
+          metrics:
+          - resource:
+              name: cpu
+              targetAverageUtilization: 80
+            type: Resource
+          scaleTargetRef:
+            apiVersion: apps/v1
+            kind: Deployment
+            name: istio-ingress-gateway-1-9-1
+        nodeSelector:
+          taco-ingress-gateway: enabled
+        service:
+          type: NodePort
+          ports:
+          - name: status-port
+            port: 15021
+            targetPort: 15021
+          - name: http2
+            port: 80
+            targetPort: 8080
+            nodePort: 31081
+          - name: https
+            port: 443
+            targetPort: 8443
+            nodePort: 31443
+          - name: tcp
+            port: 31400
+            targetPort: 31400
+          - name: tls
+            port: 15443
+            targetPort: 15443
+

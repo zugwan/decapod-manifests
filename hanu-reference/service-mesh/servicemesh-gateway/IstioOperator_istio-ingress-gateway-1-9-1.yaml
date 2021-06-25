@@ -23,6 +23,7 @@ spec:
       label:
         istio: istio-ingress-gateway
         revision: 1-9-1
+        gateway: taco-ingress
       k8s:
         resources:
           requests:

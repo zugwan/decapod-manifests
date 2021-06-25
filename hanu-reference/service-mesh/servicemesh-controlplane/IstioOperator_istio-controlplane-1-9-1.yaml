@@ -45,4 +45,8 @@ spec:
           minReplicas: 2
         nodeSelector:
           taco-servicemesh-control: enabled
+    ingressGateways:
+      enabled: false
+    egressGateways:
+      enabled: false
 

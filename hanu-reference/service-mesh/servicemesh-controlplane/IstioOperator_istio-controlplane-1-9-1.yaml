@@ -17,7 +17,7 @@ spec:
     extensionProviders:
     - name: jaeger-collector
       envoyExtAuthzGrpc:
-        service: jaeger-operator-jaeger-collector.istio-system.svc:9411
+        service: jaeger-operator-jaeger-collector.istio-system.svc
         port: 14250
     defaultConfig:
       discoveryAddress: istiod-1-9-1.istio-system.svc:15012
@@ -46,7 +46,9 @@ spec:
         nodeSelector:
           taco-servicemesh-control: enabled
     ingressGateways:
-    - enabled: false
+    - name: istio-ingressgateway
+      enabled: false
     egressGateways:
-    - enabled: false
+    - name: istio-egressgateway
+      enabled: false
 

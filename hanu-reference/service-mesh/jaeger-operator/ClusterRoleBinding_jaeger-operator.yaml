@@ -3,13 +3,13 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: jaeger-operator
-  namespace: lma
+  namespace: istio-system
   labels:
     
     app.kubernetes.io/name: jaeger-operator
 subjects:
 - kind: ServiceAccount
-  namespace: lma
+  namespace: istio-system
   name: jaeger-operator
 roleRef:
   kind: ClusterRole

@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jaeger-operator
-  namespace: lma
+  namespace: istio-system
   labels:
     
     app.kubernetes.io/name: jaeger-operator

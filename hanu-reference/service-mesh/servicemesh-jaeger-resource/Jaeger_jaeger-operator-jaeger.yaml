@@ -12,7 +12,7 @@ spec:
   agent:
     strategy: Sidecar
   ingress:
-    enabled: true
+    enabled: false
   collector:
     maxReplicas: 5
     resources:

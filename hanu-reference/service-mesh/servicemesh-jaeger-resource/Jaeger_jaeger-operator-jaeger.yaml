@@ -1,0 +1,42 @@
+# Source: servicemesh-jaeger-resource/templates/jaeger-controlplane.yaml
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger-operator-jaeger
+  namespace: istio-system
+spec:
+  strategy: production
+  production:
+    options:
+      log-level: debug
+  agent:
+    strategy: Sidecar
+  ingress:
+    enabled: true
+  collector:
+    maxReplicas: 5
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 4096Mi
+  storage:
+    type: elasticsearch
+    esIndexCleaner:
+      enabled: true
+      numberOfDays: 7
+      schedule: "55 04 * * *"
+    options:
+      es:
+        index-prefix: jaeger
+        username: elastic
+        password: tacoword
+        tls.ca: /etc/ssl/certs/tls.crt
+        server-urls: https://eck-elasticsearch-es-http.elastic-system.svc:9200
+  volumeMounts:
+  - mountPath: /etc/ssl/certs
+    name: es-tls
+  volumes:
+  - name: es-tls
+    secret:
+      secretName: eck-elasticsearch-es-http-certs-public
+

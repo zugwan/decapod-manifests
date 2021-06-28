@@ -38,11 +38,11 @@ spec:
           value: "100"
         resources:
           requests:
-            cpu: 1000m
+            cpu: 500m
             memory: 1024Mi
         hpaSpec:
           maxReplicas: 10
-          minReplicas: 2
+          minReplicas: 1
         nodeSelector:
           taco-servicemesh-control: enabled
     ingressGateways:

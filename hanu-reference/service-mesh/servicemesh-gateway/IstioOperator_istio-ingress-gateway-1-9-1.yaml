@@ -27,7 +27,7 @@ spec:
       k8s:
         resources:
           requests:
-            cpu: 1000m
+            cpu: 500m
             memory: 1024Mi
           limits:
             cpu: 4000m

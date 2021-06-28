@@ -34,7 +34,7 @@ spec:
         username: elastic
         password: tacoword
         tls.ca: /etc/ssl/certs/tls.crt
-        server-urls: https://eck-elasticsearch-es-http.elastic-system.svc:9200
+        server-urls: https://eck-elasticsearch-es-http.lma.svc:9200
   volumeMounts:
   - mountPath: /etc/ssl/certs
     name: es-tls

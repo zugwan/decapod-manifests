@@ -1,0 +1,17 @@
+# Source: jaeger-operator/templates/role-binding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jaeger-operator
+  namespace: lma
+  labels:
+    
+    app.kubernetes.io/name: jaeger-operator
+subjects:
+- kind: ServiceAccount
+  namespace: lma
+  name: jaeger-operator
+roleRef:
+  kind: ClusterRole
+  name: jaeger-operator
+  apiGroup: rbac.authorization.k8s.io

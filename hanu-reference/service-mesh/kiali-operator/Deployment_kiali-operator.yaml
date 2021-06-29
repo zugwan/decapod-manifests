@@ -40,7 +40,6 @@ spec:
       serviceAccountName: kiali-operator
       nodeSelector:
         servicemesh: enabled
-        taco-servicemesh-control: enabled
       containers:
       - name: operator
         image: "quay.io/kiali/kiali-operator:v1.31.0"

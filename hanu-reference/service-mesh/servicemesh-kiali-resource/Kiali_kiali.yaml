@@ -18,8 +18,6 @@ spec:
     ingress_enabled: false
     namespace: istio-system
     replicas: 1
-    image_name: quay.io/kiali/kiali
-    image_version: v1.34
     resources:
       requests:
         cpu: 500m

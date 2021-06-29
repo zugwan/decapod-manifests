@@ -3,12 +3,12 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: istio-ingress-gateway-1-9-1
+  name: istio-ingress-gateway-1-10-2
   namespace: istio-system
 spec:
   hub: gcr.io/istio-testing
   tag: 1.11-alpha.aa439f6e4772aa52acafa11ac7a5fbdfbb160357
-  revision: 1-9-1
+  revision: 1-10-2
   profile: empty
   values:
     global:
@@ -17,12 +17,12 @@ spec:
         level: "default:info"
   components:
     ingressGateways:
-    - name: istio-ingress-gateway-1-9-1
+    - name: istio-ingress-gateway-1-10-2
       namespace: istio-system
       enabled: true
       label:
         istio: istio-ingress-gateway
-        revision: 1-9-1
+        revision: 1-10-2
         gateway: taco-ingress
       k8s:
         resources:
@@ -43,7 +43,7 @@ spec:
           scaleTargetRef:
             apiVersion: apps/v1
             kind: Deployment
-            name: istio-ingress-gateway-1-9-1
+            name: istio-ingress-gateway-1-10-2
         nodeSelector:
           taco-ingress-gateway: enabled
         service:

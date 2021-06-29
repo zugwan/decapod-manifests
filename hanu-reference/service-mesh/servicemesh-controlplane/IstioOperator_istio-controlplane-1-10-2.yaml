@@ -3,12 +3,12 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: istio-controlplane-1-9-1
+  name: istio-controlplane-1-10-2
   namespace: 
 spec:
   hub: gcr.io/istio-testing
   tag: 1.11-alpha.aa439f6e4772aa52acafa11ac7a5fbdfbb160357
-  revision: 1-9-1
+  revision: 1-10-2
   profile: default
   meshConfig:
     accessLogFile: /dev/stdout
@@ -21,7 +21,7 @@ spec:
         service: jaeger-operator-jaeger-collector.istio-system.svc
         port: 14250
     defaultConfig:
-      discoveryAddress: istiod-1-9-1.istio-system.svc:15012
+      discoveryAddress: istiod-1-10-2.istio-system.svc:15012
       tracing:
         zipkin:
           address: jaeger-operator-jaeger-collector.istio-system.svc:9411

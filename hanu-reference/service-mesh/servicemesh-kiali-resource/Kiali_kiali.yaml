@@ -1,0 +1,59 @@
+---
+# Source: servicemesh-kiali-resource/templates/kiali-controlplane.yaml
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  name: kiali
+  namespace: istio-system
+  annotations:
+    ansible.operator-sdk/verbosity: "1"
+spec:
+  nameOverride: kiali
+  fullnameOverride: kiali
+  istio_component_namespaces:
+    prometheus: prometheus
+  istio_namespace: istio-system
+  deployment:
+    accessible_namespaces:
+    - '**'
+    namespace: istio-system
+    replicas: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1024Mi
+    node_selector:
+      taco-servicemesh-control: enabled
+    service_type: ClusterIP
+  auth:
+    strategy: anonymous
+  external_services:
+    custom_dashboards:
+      enabled: true
+    istio:
+      config_map_name: istio-1-9-1
+      istio_identity_domain: svc.cluster.local
+    prometheus:
+      url: http://prometheus-kube-prometheus-prometheus.prometheus.svc:9090
+    tracing:
+      enabled: true
+      namespace_selector: true
+      in_cluster_url: http://jaeger-operator-jaeger-query.istio-system:16686
+    grafana:
+      auth:
+        password: password
+        type: basic
+        use_kiali_token: false
+        username: admin
+      enabled: true
+      in_cluster_url: http://grafana.istio-system.svc:3000
+      url: http://k1-master01:30099
+  server:
+    metrics_enabled: true
+    metrics_port: 9090
+    port: 20001
+    web_root: /kiali
+

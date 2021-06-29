@@ -1,6 +1,0 @@
----
-# Source: servicemesh-istio-resource/templates/namespace.yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: istio-system

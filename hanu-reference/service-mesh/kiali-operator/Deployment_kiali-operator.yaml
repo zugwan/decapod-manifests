@@ -39,6 +39,7 @@ spec:
     spec:
       serviceAccountName: kiali-operator
       nodeSelector:
+        servicemesh: enabled
         taco-servicemesh-control: enabled
       containers:
       - name: operator

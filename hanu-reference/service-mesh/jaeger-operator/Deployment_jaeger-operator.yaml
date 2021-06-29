@@ -56,5 +56,6 @@ spec:
           resources:
             {}
       nodeSelector:
+        servicemesh: enabled
         taco-servicemesh-control: enabled
 

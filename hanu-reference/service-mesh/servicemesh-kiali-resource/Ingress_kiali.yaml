@@ -14,7 +14,9 @@ spec:
       http:
         paths:
         - backend:
-            serviceName: kiali
-            servicePort: 20001
+            service:
+              name: kaili
+              port:
+                number: 20001
           path: /
           pathType: Prefix

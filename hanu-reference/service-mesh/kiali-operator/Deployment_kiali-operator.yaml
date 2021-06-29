@@ -5,12 +5,12 @@ metadata:
   name: kiali-operator
   namespace: istio-system
   labels:
-    helm.sh/chart: kiali-operator-1.31.0
+    helm.sh/chart: kiali-operator-1.35.0
     app: kiali-operator
     app.kubernetes.io/name: kiali-operator
     app.kubernetes.io/instance: kiali-operator
-    version: "v1.31.0"
-    app.kubernetes.io/version: "v1.31.0"
+    version: "v1.35.0"
+    app.kubernetes.io/version: "v1.35.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: "kiali-operator"
 spec:
@@ -26,12 +26,12 @@ spec:
       labels:
         # required for the operator SDK metric service selector
         name: kiali-operator
-        helm.sh/chart: kiali-operator-1.31.0
+        helm.sh/chart: kiali-operator-1.35.0
         app: kiali-operator
         app.kubernetes.io/name: kiali-operator
         app.kubernetes.io/instance: kiali-operator
-        version: "v1.31.0"
-        app.kubernetes.io/version: "v1.31.0"
+        version: "v1.35.0"
+        app.kubernetes.io/version: "v1.35.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: "kiali-operator"
       annotations:
@@ -42,10 +42,15 @@ spec:
         servicemesh: enabled
       containers:
       - name: operator
-        image: "quay.io/kiali/kiali-operator:v1.31.0"
+        image: "quay.io/kiali/kiali-operator:v1.35.0"
         imagePullPolicy: Always
         args:
-        - "--zap-level=info"
+        - "--zap-log-level=info"
+        - "--leader-election-id=kiali-operator"
+        securityContext:
+          allowPrivilegeEscalation: false
+          privileged: false
+          runAsNonRoot: true
         volumeMounts:
         - mountPath: /tmp/ansible-operator/runner
           name: runner
@@ -60,8 +65,12 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - name: OPERATOR_NAME
-          value: kiali-operator
+        - name: ALLOW_AD_HOC_KIALI_NAMESPACE
+          value: "true"
+        - name: ALLOW_AD_HOC_KIALI_IMAGE
+          value: "false"
+        - name: PROFILE_TASKS_TASK_OUTPUT_LIMIT
+          value: "100"
         - name: ANSIBLE_DEBUG_LOGS
           value: "true"
         - name: ANSIBLE_VERBOSITY_KIALI_KIALI_IO
@@ -70,9 +79,7 @@ spec:
           value: "/etc/ansible/ansible.cfg"
         ports:
         - name: http-metrics
-          containerPort: 8383
-        - name: cr-metrics
-          containerPort: 8686
+          containerPort: 8080
       volumes:
       - name: runner
         emptyDir: {}

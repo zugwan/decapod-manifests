@@ -6,9 +6,6 @@ metadata:
   namespace: istio-system
 spec:
   strategy: production
-  production:
-    options:
-      log-level: debug
   agent:
     strategy: Sidecar
   ingress:
@@ -18,10 +15,10 @@ spec:
     resources:
       requests:
         cpu: 500m
-        memory: 1024Mi
+        memory: 1Gi
       limits:
-        cpu: 1000m
-        memory: 2048Mi
+        cpu: 1
+        memory: 2Gi
   storage:
     type: elasticsearch
     esIndexCleaner:

@@ -11,7 +11,7 @@ spec:
   match: "seperate.platform.*"
   es:
     index: platform
-    host: eck-elasticsearch-es-http.lma.svc.cluster.local
+    host: eck-elasticsearch-es-http.lma.svc.cluster.taco
     port: 9200
     type: fluent
     httpUser:

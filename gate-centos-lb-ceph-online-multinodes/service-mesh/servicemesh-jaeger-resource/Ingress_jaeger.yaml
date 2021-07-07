@@ -1,0 +1,22 @@
+---
+# Source: servicemesh-jaeger-resource/templates/jaeger-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jaeger
+  namespace: istio-system
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: jaeger.k2-node01
+      http:
+        paths:
+        - backend:
+            service:
+              name: jaeger-operator-jaeger-query
+              port:
+                number: 16686
+          path: /
+          pathType: Prefix

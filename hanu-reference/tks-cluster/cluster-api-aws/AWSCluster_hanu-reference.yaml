@@ -1,0 +1,17 @@
+---
+# Source: cluster-api-aws/templates/aws-cluster.yaml
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AWSCluster
+metadata:
+  name: hanu-reference
+spec:
+  region: ap-south-1
+  sshKeyName: taco
+  networkSpec:
+    subnets:
+    - id: subnet-048582d6e591230b9
+    - id: subnet-06cfd42c5bfc5701f
+    - id: subnet-07867c6867f7f0053
+    - id: subnet-08b0c376db6d22893
+    vpc:
+      id: vpc-0559b909b56157f3a

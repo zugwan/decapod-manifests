@@ -1,0 +1,16 @@
+# Source: fluentbit-operator/templates/fluentbit/filters.yaml
+apiVersion: logging.kubesphere.io/v1alpha2
+kind: Filter
+metadata:
+  name: add-critical
+  namespace: lma
+  labels:
+    logging.kubesphere.io/enabled: "true"
+    app.kubernetes.io/version: v0.0.1
+spec:
+  match: "m_critical.*"
+  filters:
+  - modify:
+      rules:
+      - add:
+          level: critical

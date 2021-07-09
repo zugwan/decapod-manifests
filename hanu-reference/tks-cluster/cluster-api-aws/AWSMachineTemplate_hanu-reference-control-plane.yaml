@@ -1,0 +1,15 @@
+# Source: cluster-api-aws/templates/machine-template.yaml
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AWSMachineTemplate
+metadata:
+  name: hanu-reference-control-plane
+  namespace: capa-system
+spec:
+  template:
+    spec:
+      iamInstanceProfile: control-plane.cluster-api-provider-aws.sigs.k8s.io
+      instanceType: t3.large
+      sshKeyName: taco
+      rootVolume:
+        size: 16
+        type: gp2

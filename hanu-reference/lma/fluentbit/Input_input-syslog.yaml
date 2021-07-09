@@ -1,0 +1,18 @@
+# Source: fluentbit-operator/templates/fluentbit/inputs.yaml
+apiVersion: logging.kubesphere.io/v1alpha2
+kind: Input
+metadata:
+  name: input-syslog
+  namespace: lma
+  labels:
+    logging.kubesphere.io/enabled: "true"
+    app.kubernetes.io/version: v0.0.1
+spec:
+  tail: 
+    db: /fluent-bit/tail
+    bufferChunkSize: 1M
+    bufferMaxSize: 1M
+    memBufLimit: 5M
+    parser: syslog-rfc5424
+    path: /var/log/syslog
+    tag: "syslog.*"

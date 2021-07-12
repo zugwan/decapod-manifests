@@ -16,7 +16,7 @@ spec:
           image: "sktdev/kibana-init:v4"
           env:
             - name: KIBANA_URL
-              value: http://eck-kibana-dashboard-kb-http.lma.svc.cluster.taco:5601
+              value: http://eck-kibana-dashboard-kb-http.lma.svc.cluster.local:5601
             - name: KIBANA_USER
               value: elastic
             - name: KIBANA_PASSWORD

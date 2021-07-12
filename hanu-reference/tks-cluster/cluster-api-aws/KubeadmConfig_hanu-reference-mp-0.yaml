@@ -1,0 +1,12 @@
+# Source: cluster-api-aws/templates/kubeadm-config.yaml
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: KubeadmConfig
+metadata:
+  name: hanu-reference-mp-0
+  namespace: capa-system
+spec:
+  joinConfiguration:
+    nodeRegistration:
+      kubeletExtraArgs:
+        cloud-provider: aws
+      name: '{{ ds.meta_data.local_hostname }}'

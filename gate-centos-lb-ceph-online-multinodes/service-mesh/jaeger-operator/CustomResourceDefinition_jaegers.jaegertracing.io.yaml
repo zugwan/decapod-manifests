@@ -34,4 +34,3 @@ spec:
           description: Jaeger Version
           name: Version
           type: string
-

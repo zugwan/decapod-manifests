@@ -11,7 +11,7 @@ metadata:
 spec:
   match: "m_*"
   http:
-    host: fluentbit-operator-exporter.lma.svc.cluster.taco
+    host: fluentbit-operator-exporter.lma.svc.cluster.local
     port: 2112
     uri: "/logs"
     format: json

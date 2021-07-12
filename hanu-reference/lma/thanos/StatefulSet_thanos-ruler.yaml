@@ -68,8 +68,8 @@ spec:
             - --http-address=0.0.0.0:10902
             - --data-dir=/data
             - --eval-interval=1m
-            - --alertmanagers.url=http://fed-master-alertmanager.lma.svc.cluster.taco:9093
-            - --query=dnssrv+_http._tcp.thanos-query.lma.svc.cluster.taco
+            - --alertmanagers.url=http://fed-master-alertmanager.lma.svc.cluster.local:9093
+            - --query=dnssrv+_http._tcp.thanos-query.lma.svc.cluster.local
             - --label=replica="$(POD_NAME)"
             - --label=ruler_cluster=""
             - --alert.label-drop=replica

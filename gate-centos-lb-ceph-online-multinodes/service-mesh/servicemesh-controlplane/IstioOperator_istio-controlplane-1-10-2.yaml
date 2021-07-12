@@ -1,0 +1,55 @@
+---
+# Source: servicemesh-istio-resource/templates/istio-controlplane.yaml
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio-controlplane-1-10-2
+  namespace: 
+spec:
+  hub: docker.io/istio
+  tag: 1.10.2
+  revision: 1-10-2
+  profile: default
+  meshConfig:
+    accessLogFile: /dev/stdout
+    enableTracing: true
+    enablePrometheusMerge: true
+    enableAutoMtls: false
+    extensionProviders:
+    - name: jaeger-collector
+      envoyExtAuthzGrpc:
+        service: jaeger-operator-jaeger-collector.istio-system.svc
+        port: 14250
+    defaultConfig:
+      discoveryAddress: istiod-1-10-2.istio-system.svc:15012
+      tracing:
+        zipkin:
+          address: jaeger-operator-jaeger-collector.istio-system.svc:9411
+        sampling: 100
+  values:
+    global:
+      logging:
+        level: "default:info"
+      istioNamespace: istio-system
+  components:
+    pilot:
+      k8s:
+        env:
+        - name: PILOT_TRACE_SAMPLING
+          value: "100"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1024Mi
+        hpaSpec:
+          maxReplicas: 10
+          minReplicas: 1
+        nodeSelector:
+          servicemesh: enabled
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: false
+    egressGateways:
+    - name: istio-egressgateway
+      enabled: false
+

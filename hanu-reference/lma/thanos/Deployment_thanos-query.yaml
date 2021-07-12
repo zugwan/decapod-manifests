@@ -61,10 +61,10 @@ spec:
             - --grpc-address=0.0.0.0:10901
             - --http-address=0.0.0.0:10902
             - --query.replica-label=replica
-            - --store=dnssrv+_grpc._tcp.lma-thanos-discovery.lma.svc.cluster.taco
-            - --store=dnssrv+_grpc._tcp.thanos-storegateway.lma.svc.cluster.taco
-            - --store=dnssrv+_grpc._tcp.thanos-ruler.lma.svc.cluster.taco
-            - --store=prometheus-operated.lma.svc.cluster.taco:10901
+            - --store=dnssrv+_grpc._tcp.lma-thanos-discovery.lma.svc.cluster.local
+            - --store=dnssrv+_grpc._tcp.thanos-storegateway.lma.svc.cluster.local
+            - --store=dnssrv+_grpc._tcp.thanos-ruler.lma.svc.cluster.local
+            - --store=prometheus-operated.lma.svc.cluster.local:10901
           ports:
             - name: http
               containerPort: 10902

@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jaeger-operator
-  namespace: lma
+  namespace: istio-system
   labels:
     
     app.kubernetes.io/name: jaeger-operator
@@ -23,7 +23,7 @@ spec:
       serviceAccountName: jaeger-operator
       containers:
         - name: jaeger-operator
-          image: "jaegertracing/jaeger-operator:1.22.1"
+          image: "jaegertracing/jaeger-operator:1.21.2"
           imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 8383
@@ -31,20 +31,18 @@ spec:
           args:
           - "start"
           - "--jaeger-agent-image"
-          - "jaegertracing/jaeger-agent:1.22.0"
+          - "jaegertracing/jaeger-agent:1.21.0"
           - "--jaeger-collector-image"
-          - "jaegertracing/jaeger-collector:1.22.0"
+          - "jaegertracing/jaeger-collector:1.21.0"
           - "--jaeger-ingester-image"
-          - "jaegertracing/jaeger-ingester:1.22.0"
+          - "jaegertracing/jaeger-ingester:1.21.0"
           - "--jaeger-query-image"
-          - "jaegertracing/jaeger-query:1.22.0"
+          - "jaegertracing/jaeger-query:1.21.0"
           - "--jaeger-all-in-one-image"
-          - "jaegertracing/all-in-one:1.22.0"
+          - "jaegertracing/all-in-one:1.21.0"
           env:
             - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
+              value: ""
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -57,3 +55,6 @@ spec:
               value: "jaeger-operator"
           resources:
             {}
+      nodeSelector:
+        servicemesh: enabled
+

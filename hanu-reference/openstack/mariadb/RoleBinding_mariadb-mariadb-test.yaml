@@ -1,0 +1,14 @@
+# Source: mariadb/templates/pod-test.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: mariadb-mariadb-test
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mariadb-openstack-mariadb-test
+subjects:
+  - kind: ServiceAccount
+    name: mariadb-test
+    namespace: openstack

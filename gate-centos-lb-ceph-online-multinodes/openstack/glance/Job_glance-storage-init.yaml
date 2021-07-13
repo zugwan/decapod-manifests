@@ -1,0 +1,137 @@
+# Source: glance/templates/job-storage-init.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: glance-storage-init
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+spec:
+  template:
+    metadata:
+      labels:
+        release_group: glance
+        application: glance
+        component: storage-init
+    spec:
+      serviceAccountName: glance-storage-init
+      securityContext:
+        runAsUser: 42415
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+      initContainers:
+        
+        - name: init
+          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: ""
+            - name: DEPENDENCY_JOBS
+              value: "glance-ks-user"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+        
+        - name: ceph-keyring-placement
+          image: "docker.io/openstackhelm/glance:stein-ubuntu_bionic"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - /tmp/ceph-admin-keyring.sh
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: etcceph
+              mountPath: /etc/ceph
+            - name: glance-bin
+              mountPath: /tmp/ceph-admin-keyring.sh
+              subPath: ceph-admin-keyring.sh
+              readOnly: true
+        
+      containers:
+        - name: glance-storage-init
+          image: "docker.io/openstackhelm/ceph-config-helper:latest-ubuntu_xenial"
+          imagePullPolicy: IfNotPresent
+          
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: STORAGE_BACKEND
+              value: "rbd"
+            - name: RBD_POOL_NAME
+              value: "images"
+            - name: RBD_POOL_APP_NAME
+              value: "glance-image"
+            - name: RBD_POOL_USER
+              value: "glance"
+            - name: RBD_POOL_REPLICATION
+              value: "3"
+            - name: RBD_POOL_CRUSH_RULE
+              value: "replicated_rule"
+            - name: RBD_POOL_CHUNK_SIZE
+              value: "8"
+            - name: RBD_POOL_SECRET
+              value: "images-rbd-keyring"
+            
+          command:
+            - /tmp/storage-init.sh
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: glance-bin
+              mountPath: /tmp/storage-init.sh
+              subPath: storage-init.sh
+              readOnly: true
+            
+            - name: etcceph
+              mountPath: /etc/ceph
+            - name: ceph-etc
+              mountPath: /etc/ceph/ceph.conf
+              subPath: ceph.conf
+              readOnly: true
+            
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: glance-bin
+          configMap:
+            name: glance-bin
+            defaultMode: 0555
+        
+        - name: etcceph
+          emptyDir: {}
+        - name: ceph-etc
+          configMap:
+            name: ceph-etc
+            defaultMode: 0444

@@ -1,0 +1,104 @@
+# Source: mariadb/templates/monitoring/prometheus/exporter-job-create-user.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: exporter-create-sql-user
+spec:
+  backoffLimit: 87600
+  template:
+    metadata:
+      labels:
+        release_group: mariadb
+        application: prometheus-mysql-exporter
+        component: create-sql-user
+    spec:
+      shareProcessNamespace: true
+      serviceAccountName: exporter-create-sql-user
+      securityContext:
+        runAsUser: 0
+      activeDeadlineSeconds: 3600
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+      initContainers:
+        
+        - name: init
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:mariadb"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+      containers:
+        - name: exporter-create-sql-user
+          image: "deploy001:5000/mariadb:10.2.13"
+          imagePullPolicy: IfNotPresent
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          
+          command:
+            - /tmp/create-mysql-user.sh
+          env:
+            - name: EXPORTER_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-exporter-secrets
+                  key: EXPORTER_USER
+            - name: EXPORTER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-exporter-secrets
+                  key: EXPORTER_PASSWORD
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: mysql-exporter-bin
+              mountPath: /tmp/create-mysql-user.sh
+              subPath: create-mysql-user.sh
+              readOnly: true
+            - name: mariadb-secrets
+              mountPath: /etc/mysql/admin_user.cnf
+              subPath: admin_user.cnf
+              readOnly: true
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: mysql-exporter-bin
+          configMap:
+            name: mysql-exporter-bin
+            defaultMode: 0555
+        - name: mariadb-secrets
+          secret:
+            secretName: mariadb-secrets
+            defaultMode: 0444

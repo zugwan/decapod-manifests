@@ -1,0 +1,93 @@
+# Source: mariadb/templates/pod-test.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "mariadb-test"
+  labels:
+    release_group: mariadb
+    application: mariadb
+    component: test
+  annotations:
+    "helm.sh/hook": test-success
+    "openstackhelm.openstack.org/release_uuid": ""
+spec:
+  shareProcessNamespace: true
+  serviceAccountName: mariadb-test
+  securityContext:
+    runAsUser: 999
+  nodeSelector:
+    openstack-control-plane: enabled
+  restartPolicy: Never
+  initContainers:
+        
+        - name: init
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:mariadb"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+  containers:
+    - name: mariadb-mariadb-test
+      
+      securityContext:
+        readOnlyRootFilesystem: true
+        runAsUser: 999
+      image: "deploy001:5000/openstackhelm/mariadb:latest-ubuntu_xenial"
+      imagePullPolicy: IfNotPresent
+      command:
+        - /tmp/test.sh
+      volumeMounts:
+        - name: pod-tmp
+          mountPath: /tmp
+        - name: mariadb-bin
+          mountPath: /tmp/test.sh
+          subPath: test.sh
+          readOnly: true
+        - name: mariadb-secrets
+          mountPath: /etc/mysql/test-params.cnf
+          
+          subPath: admin_user_internal.cnf
+          
+          readOnly: true
+  volumes:
+    - name: pod-tmp
+      emptyDir: {}
+    - name: mariadb-bin
+      configMap:
+        name: mariadb-bin
+        defaultMode: 0555
+    - name: mariadb-secrets
+      secret:
+        secretName: mariadb-secrets
+        defaultMode: 0444
+

@@ -1,0 +1,14 @@
+# Source: nova/templates/deployment-api-metadata.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nova-nova-api-metadata
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: nova-openstack-nova-api-metadata
+subjects:
+  - kind: ServiceAccount
+    name: nova-api-metadata
+    namespace: openstack

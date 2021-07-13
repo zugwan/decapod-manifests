@@ -1,0 +1,13 @@
+# Source: ingress/templates/deployment-ingress.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: ingress-ingress
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ingress-ingress
+subjects:
+  - kind: ServiceAccount
+    name: ingress-ingress
+    namespace: openstack

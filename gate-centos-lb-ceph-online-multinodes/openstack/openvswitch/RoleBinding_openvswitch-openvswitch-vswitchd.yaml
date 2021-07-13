@@ -1,0 +1,14 @@
+# Source: openvswitch/templates/daemonset-ovs-vswitchd.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: openvswitch-openvswitch-vswitchd
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openvswitch-openstack-openvswitch-vswitchd
+subjects:
+  - kind: ServiceAccount
+    name: openvswitch-vswitchd
+    namespace: openstack

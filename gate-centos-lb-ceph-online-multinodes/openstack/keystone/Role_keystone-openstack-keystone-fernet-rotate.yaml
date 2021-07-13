@@ -1,0 +1,18 @@
+# Source: keystone/templates/cron-job-fernet-rotate.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keystone-openstack-keystone-fernet-rotate
+  namespace: openstack
+rules:
+  - apiGroups:
+      - ""
+      - extensions
+      - batch
+      - apps
+    verbs:
+      - get
+      - list
+    resources:
+      - jobs
+      - pods

@@ -1,0 +1,13 @@
+---
+# Source: mariadb/templates/pdb-mariadb.yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: mariadb-server
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      release_group: mariadb
+      application: mariadb
+      component: server

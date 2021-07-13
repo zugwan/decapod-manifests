@@ -1,0 +1,156 @@
+# Source: heat/templates/deployment-engine.yaml
+apiVersion: apps/v1
+metadata:
+  name: heat-engine
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+  labels:
+    release_group: heat
+    application: heat
+    component: engine
+kind: Deployment
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 3
+  replicas: 3
+  selector:
+    matchLabels:
+      release_group: heat
+      application: heat
+      component: engine
+  template:
+    metadata:
+      labels:
+        release_group: heat
+        application: heat
+        component: engine
+      annotations:
+        "openstackhelm.openstack.org/release_uuid": ""
+        configmap-bin-hash: "b814469ae6753dfd221f5a931a0989174069b9cb80cdf5deaf7edd27c8bc09d9"
+        configmap-etc-hash: "ea266856c29c5f61b6de1688bfef347ab259663667a5000688aa3b2142547d7d"
+    spec:
+      serviceAccountName: heat-engine
+      securityContext:
+        runAsUser: 42418
+      affinity:        
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: release_group
+                    operator: In
+                    values:
+                    - heat
+                  - key: application
+                    operator: In
+                    values:
+                    - heat
+                  - key: component
+                    operator: In
+                    values:
+                    - engine
+              topologyKey: kubernetes.io/hostname
+            weight: 10
+      nodeSelector:
+        openstack-control-plane: enabled
+      terminationGracePeriodSeconds: 30
+      initContainers:
+        
+        - name: init
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:mariadb,openstack:rabbitmq,openstack:keystone-api"
+            - name: DEPENDENCY_JOBS
+              value: "heat-db-sync,heat-rabbit-init,heat-ks-user,heat-trustee-ks-user,heat-domain-ks-user,heat-ks-endpoints,heat-bootstrap"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            null
+      containers:
+        - name: heat-engine
+          image: "deploy001:5000/stein/ubuntu-source-heat-engine:taco-0.1.0"
+          imagePullPolicy: IfNotPresent
+          
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          command:
+            - /tmp/heat-engine.sh
+            - start
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /tmp/heat-engine.sh
+                  - stop
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: pod-etc-heat
+              mountPath: /etc/heat
+            - name: heat-bin
+              mountPath: /tmp/heat-engine.sh
+              subPath: heat-engine.sh
+              readOnly: true
+            - name: heat-etc
+              mountPath: /etc/heat/heat.conf
+              subPath: heat.conf
+              readOnly: true
+            
+            - name: heat-etc
+              mountPath: /etc/heat/logging.conf
+              subPath: logging.conf
+              readOnly: true
+            
+            - name: heat-etc
+              mountPath: /etc/heat/policy.json
+              subPath: policy.json
+              readOnly: true
+
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: pod-etc-heat
+          emptyDir: {}
+        - name: heat-bin
+          configMap:
+            name: heat-bin
+            defaultMode: 0555
+        - name: heat-etc
+          secret:
+            secretName: heat-etc
+            defaultMode: 0444

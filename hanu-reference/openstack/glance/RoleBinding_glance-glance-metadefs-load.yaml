@@ -1,0 +1,14 @@
+# Source: glance/templates/job-metadefs-load.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: glance-glance-metadefs-load
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: glance-openstack-glance-metadefs-load
+subjects:
+  - kind: ServiceAccount
+    name: glance-metadefs-load
+    namespace: openstack

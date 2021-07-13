@@ -1,0 +1,14 @@
+# Source: nova/templates/cron-job-service-cleaner.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nova-nova-service-cleaner
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: nova-openstack-nova-service-cleaner
+subjects:
+  - kind: ServiceAccount
+    name: nova-service-cleaner
+    namespace: openstack

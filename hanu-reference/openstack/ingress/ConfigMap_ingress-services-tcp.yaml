@@ -1,0 +1,5 @@
+# Source: ingress/templates/configmap-services-tcp.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-services-tcp

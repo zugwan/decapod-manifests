@@ -1,0 +1,18 @@
+# Source: rabbitmq/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+spec:
+  clusterIP: None
+  ports:
+    - port: 5672
+      name: amqp
+    - port: 25672
+      name: clustering
+    - port: 15672
+      name: http
+  selector:
+    release_group: rabbitmq
+    application: rabbitmq
+    component: server

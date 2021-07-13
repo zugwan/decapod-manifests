@@ -1,0 +1,154 @@
+# Source: openvswitch/templates/daemonset-ovs-db.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: openvswitch-db
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+  labels:
+    release_group: openvswitch
+    application: openvswitch
+    component: openvswitch-vswitchd-db
+spec:
+  selector:
+    matchLabels:
+      release_group: openvswitch
+      application: openvswitch
+      component: openvswitch-vswitchd-db
+  
+  minReadySeconds: 0
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        release_group: openvswitch
+        application: openvswitch
+        component: openvswitch-vswitchd-db
+      annotations:
+        "openstackhelm.openstack.org/release_uuid": ""
+        configmap-bin-hash: "d649951552d5973c4eb3182d19c58bea58128d0618edcaa25b958da703f7192f"
+        
+    spec:
+      shareProcessNamespace: true
+      serviceAccountName: openvswitch-db
+      securityContext:
+        runAsUser: 0
+      nodeSelector:
+        openvswitch: enabled
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      initContainers:
+        
+        - name: init
+          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: ""
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+        - name: openvswitch-db-perms
+          image: "docker.io/openstackhelm/openvswitch:ubuntu_bionic-20191031"
+          imagePullPolicy: IfNotPresent
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 0
+          
+          command:
+            - chown
+            - -R
+            - "0"
+            - /run/openvswitch
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: run
+              mountPath: /run/openvswitch
+      containers:
+        - name: openvswitch-db
+          image: "docker.io/openstackhelm/openvswitch:ubuntu_bionic-20191031"
+          imagePullPolicy: IfNotPresent
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 0
+          
+          livenessProbe:
+            exec:
+              command:
+              - /usr/bin/ovs-vsctl
+              - show
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+              - /usr/bin/ovs-vsctl
+              - list
+              - Open_Vswitch
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 5
+          command:
+            - /tmp/openvswitch-db-server.sh
+            - start
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /tmp/openvswitch-db-server.sh
+                  - stop
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: openvswitch-bin
+              mountPath: /tmp/openvswitch-db-server.sh
+              subPath: openvswitch-db-server.sh
+              readOnly: true
+            - name: run
+              mountPath: /run/openvswitch
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: openvswitch-bin
+          configMap:
+            name: openvswitch-bin
+            defaultMode: 0555
+        - name: run
+          hostPath:
+            path: /run/openvswitch

@@ -1,0 +1,199 @@
+# Source: prometheus-openstack-exporter/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-openstack-exporter
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+  labels:
+    release_group: prometheus-openstack-exporter
+    application: prometheus-openstack-exporter
+    component: exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      release_group: prometheus-openstack-exporter
+      application: prometheus-openstack-exporter
+      component: exporter
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        release_group: prometheus-openstack-exporter
+        application: prometheus-openstack-exporter
+        component: exporter
+      annotations:
+        
+        "openstackhelm.openstack.org/release_uuid": ""
+    spec:
+      securityContext:
+        runAsUser: 65534
+      serviceAccountName: prometheus-openstack-exporter
+      affinity:
+        
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: release_group
+                    operator: In
+                    values:
+                    - prometheus-openstack-exporter
+                  - key: application
+                    operator: In
+                    values:
+                    - prometheus-openstack-exporter
+                  - key: component
+                    operator: In
+                    values:
+                    - exporter
+              topologyKey: kubernetes.io/hostname
+            weight: 10
+      nodeSelector:
+        openstack-control-plane: "enabled"
+      terminationGracePeriodSeconds: 30
+      initContainers:
+        
+        - name: init
+          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:keystone-api"
+            - name: DEPENDENCY_JOBS
+              value: "prometheus-openstack-exporter-ks-user"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+      containers:
+        - name: openstack-metrics-exporter
+          image: "docker.io/openstackhelm/prometheus-openstack-exporter:ubuntu_bionic-20191017"
+          imagePullPolicy: IfNotPresent
+          
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          command:
+            - /tmp/prometheus-openstack-exporter.sh
+            - start
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /tmp/prometheus-openstack-exporter.sh
+                  - stop
+          ports:
+            - name: metrics
+              containerPort: 9103
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 9103
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          env:
+            - name: LISTEN_PORT
+              value: "9103"
+            - name: OS_POLLING_INTERVAL
+              value: "30"
+            - name: OS_RETRIES
+              value: "1"
+            - name: TIMEOUT_SECONDS
+              value: "20"
+                        
+            - name: OS_IDENTITY_API_VERSION
+              value: "3"
+            - name: OS_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-openstack-exporter-keystone-user
+                  key: OS_AUTH_URL
+            - name: OS_REGION_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-openstack-exporter-keystone-user
+                  key: OS_REGION_NAME
+            - name: OS_INTERFACE
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-openstack-exporter-keystone-user
+                  key: OS_INTERFACE
+            - name: OS_PROJECT_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-openstack-exporter-keystone-user
+                  key: OS_PROJECT_DOMAIN_NAME
+            - name: OS_PROJECT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-openstack-exporter-keystone-user
+                  key: OS_PROJECT_NAME
+            - name: OS_USER_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-openstack-exporter-keystone-user
+                  key: OS_USER_DOMAIN_NAME
+            - name: OS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-openstack-exporter-keystone-user
+                  key: OS_USERNAME
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-openstack-exporter-keystone-user
+                  key: OS_PASSWORD
+            - name: OS_DEFAULT_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-openstack-exporter-keystone-user
+                  key: OS_DEFAULT_DOMAIN
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: prometheus-openstack-exporter-bin
+              mountPath: /tmp/prometheus-openstack-exporter.sh
+              subPath: prometheus-openstack-exporter.sh
+              readOnly: true
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: prometheus-openstack-exporter-bin
+          configMap:
+            name: prometheus-openstack-exporter-bin
+            defaultMode: 0555

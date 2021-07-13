@@ -1,0 +1,99 @@
+# Source: ironic/templates/job-db-sync.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "ironic-db-sync"
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        release_group: ironic
+        application: ironic
+        component: db-sync
+      annotations:
+        "openstackhelm.openstack.org/release_uuid": ""
+    spec:
+      serviceAccountName: ironic-db-sync
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+      initContainers:
+        
+        - name: init
+          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:mariadb"
+            - name: DEPENDENCY_JOBS
+              value: "ironic-db-init"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+      containers:
+        - name: "ironic-db-sync"
+          image: "docker.io/openstackhelm/ironic:ocata-ubuntu_xenial"
+          imagePullPolicy: "IfNotPresent"
+          
+          command:
+            - /bin/bash
+            - -c
+            - /tmp/db-sync.sh
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: db-sync-sh
+              mountPath: /tmp/db-sync.sh
+              subPath: db-sync.sh
+              readOnly: true
+            - name: etc-service
+              mountPath: "/etc/ironic"
+            - name: db-sync-conf
+              mountPath: "/etc/ironic/ironic.conf"
+              subPath: "ironic.conf"
+              readOnly: true
+            - name: db-sync-conf
+              mountPath: "/etc/ironic/logging.conf"
+              subPath: "logging.conf"
+              readOnly: true
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: db-sync-sh
+          configMap:
+            name: "ironic-bin"
+            defaultMode: 0555
+        - name: etc-service
+          emptyDir: {}
+        - name: db-sync-conf
+          secret:
+            secretName: "ironic-etc"
+            defaultMode: 0444

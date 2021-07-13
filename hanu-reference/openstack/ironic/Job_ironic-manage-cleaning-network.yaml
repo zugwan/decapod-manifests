@@ -1,0 +1,145 @@
+# Source: ironic/templates/job-manage-cleaning-network.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ironic-manage-cleaning-network
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+spec:
+  template:
+    metadata:
+      labels:
+        release_group: ironic
+        application: ironic
+        component: manage-cleaning-network
+    spec:
+      serviceAccountName: ironic-manage-cleaning-network
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+      initContainers:
+        
+        - name: init
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:neutron-server"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+      containers:
+        - name: ironic-manage-cleaning-network
+          image: "deploy001:5000/stein/ubuntu-source-heat-engine:taco-0.1.0"
+          imagePullPolicy: IfNotPresent
+          
+          env:            
+            - name: OS_IDENTITY_API_VERSION
+              value: "3"
+            - name: OS_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ironic-keystone-user
+                  key: OS_AUTH_URL
+            - name: OS_REGION_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: ironic-keystone-user
+                  key: OS_REGION_NAME
+            - name: OS_INTERFACE
+              valueFrom:
+                secretKeyRef:
+                  name: ironic-keystone-user
+                  key: OS_INTERFACE
+            - name: OS_PROJECT_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: ironic-keystone-user
+                  key: OS_PROJECT_DOMAIN_NAME
+            - name: OS_PROJECT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: ironic-keystone-user
+                  key: OS_PROJECT_NAME
+            - name: OS_USER_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: ironic-keystone-user
+                  key: OS_USER_DOMAIN_NAME
+            - name: OS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ironic-keystone-user
+                  key: OS_USERNAME
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ironic-keystone-user
+                  key: OS_PASSWORD
+            - name: OS_DEFAULT_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: ironic-keystone-user
+                  key: OS_DEFAULT_DOMAIN
+            - name: device
+              value: "eth1"
+            - name: neutron_network_name
+              value: "baremetal-net"
+            - name: neutron_provider_network
+              value: "baremetal"
+            - name: neutron_subnet_alloc_end
+              value: "192.168.0.150"
+            - name: neutron_subnet_alloc_start
+              value: "192.168.0.100"
+            - name: neutron_subnet_cidr
+              value: "192.168.0.0/24"
+            - name: neutron_subnet_dns_nameserver
+              value: "8.8.8.8"
+            - name: neutron_subnet_gateway
+              value: "192.168.0.1"
+            - name: neutron_subnet_name
+              value: "baremetal-subnet"
+            
+          command:
+            - /tmp/manage-cleaning-network.sh
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: ironic-bin
+              mountPath: /tmp/manage-cleaning-network.sh
+              subPath: manage-cleaning-network.sh
+              readOnly: true
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: ironic-bin
+          configMap:
+            name: ironic-bin
+            defaultMode: 0555

@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/part-of: argo-workflows
 data:
   config: |
-    containerRuntimeExecutor: kubelet
+    containerRuntimeExecutor: k8sapi
     persistence:
       archive: true
       nodeStatusOffLoad: true

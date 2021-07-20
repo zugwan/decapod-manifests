@@ -2,11 +2,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: argo-workflows-workflow-controller
+  name: argo-workflows-operator-workflow-controller
   labels:
     helm.sh/chart: argo-workflows-0.2.6
     app.kubernetes.io/name: argo-workflows-workflow-controller
-    app.kubernetes.io/instance: argo-workflows
+    app.kubernetes.io/instance: argo-workflows-operator
     app.kubernetes.io/component: workflow-controller
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: argo-workflows
@@ -16,19 +16,19 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: argo-workflows-workflow-controller
-      app.kubernetes.io/instance: argo-workflows
+      app.kubernetes.io/instance: argo-workflows-operator
   template:
     metadata:
       labels:
         helm.sh/chart: argo-workflows-0.2.6
         app.kubernetes.io/name: argo-workflows-workflow-controller
-        app.kubernetes.io/instance: argo-workflows
+        app.kubernetes.io/instance: argo-workflows-operator
         app.kubernetes.io/component: workflow-controller
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: argo-workflows
         app.kubernetes.io/version: "v3.0.7"
     spec:
-      serviceAccountName: argo-workflows-workflow-controller
+      serviceAccountName: argo-workflows-operator-workflow-controller
       containers:
         - name: controller
           image: "quay.io/argoproj/workflow-controller:v3.0.7"
@@ -36,7 +36,7 @@ spec:
           command: [ "workflow-controller" ]
           args:
           - "--configmap"
-          - "argo-workflows-workflow-controller-configmap"
+          - "argo-workflows-operator-workflow-controller-configmap"
           - "--executor-image"
           - "quay.io/argoproj/argoexec:v3.0.7"
           - "--loglevel"

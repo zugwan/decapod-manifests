@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: argo-workflows-admin
+  name: argo-workflows-operator-admin
   labels:
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:

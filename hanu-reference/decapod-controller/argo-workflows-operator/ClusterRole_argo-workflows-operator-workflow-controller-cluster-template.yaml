@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: argo-workflows-workflow-controller-cluster-template
+  name: argo-workflows-operator-workflow-controller-cluster-template
 rules:
 - apiGroups:
   - argoproj.io

@@ -2,11 +2,11 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: argo-workflows-server-cluster-template
+  name: argo-workflows-operator-server-cluster-template
   labels:
     helm.sh/chart: argo-workflows-0.2.6
     app.kubernetes.io/name: argo-workflows-server
-    app.kubernetes.io/instance: argo-workflows
+    app.kubernetes.io/instance: argo-workflows-operator
     app.kubernetes.io/component: server
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: argo-workflows

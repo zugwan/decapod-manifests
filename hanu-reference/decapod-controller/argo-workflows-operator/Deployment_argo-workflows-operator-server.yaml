@@ -2,11 +2,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: argo-workflows-server
+  name: argo-workflows-operator-server
   labels:
     helm.sh/chart: argo-workflows-0.2.6
     app.kubernetes.io/name: argo-workflows-server
-    app.kubernetes.io/instance: argo-workflows
+    app.kubernetes.io/instance: argo-workflows-operator
     app.kubernetes.io/component: server
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: argo-workflows
@@ -16,19 +16,19 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: argo-workflows-server
-      app.kubernetes.io/instance: argo-workflows
+      app.kubernetes.io/instance: argo-workflows-operator
   template:
     metadata:
       labels:
         helm.sh/chart: argo-workflows-0.2.6
         app.kubernetes.io/name: argo-workflows-server
-        app.kubernetes.io/instance: argo-workflows
+        app.kubernetes.io/instance: argo-workflows-operator
         app.kubernetes.io/component: server
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: argo-workflows
         app.kubernetes.io/version: "v3.0.7"
     spec:
-      serviceAccountName: argo-workflows-server
+      serviceAccountName: argo-workflows-operator-server
       containers:
         - name: argo-server
           image: "quay.io/argoproj/argocli:v3.0.7"
@@ -42,7 +42,7 @@ spec:
             runAsNonRoot: true
           args:
           - server
-          - --configmap=argo-workflows-workflow-controller-configmap
+          - --configmap=argo-workflows-operator-workflow-controller-configmap
           - "--secure=false"
           ports:
           - name: web

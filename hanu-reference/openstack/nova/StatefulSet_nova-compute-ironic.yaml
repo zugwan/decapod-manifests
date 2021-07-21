@@ -26,7 +26,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
-        configmap-etc-hash: "67cdf9058bcd7aff34c442aae0d78a0c7bf24c103c86042f6b8e5ad919615dbe"
+        configmap-etc-hash: "50960a09d47f09a7f867358025fb69d8fb8e9c48c219dfa6123ab770ad1c00a4"
         
     spec:
       serviceAccountName: nova-compute-ironic

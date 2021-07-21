@@ -9,7 +9,7 @@ metadata:
     helm.sh/chart: postgresql-10.5.2
     app.kubernetes.io/instance: postgresql
     app.kubernetes.io/managed-by: Helm
-  namespace: argo
+  namespace: decapod-db
 data:
   postgresql.conf: |
     listen_addresses = '*'

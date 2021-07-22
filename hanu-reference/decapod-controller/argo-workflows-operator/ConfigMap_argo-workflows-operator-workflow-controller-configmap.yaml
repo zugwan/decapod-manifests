@@ -18,7 +18,7 @@ data:
       nodeStatusOffLoad: true
       postgresql:
         database: postgres
-        host: postgresql.argo
+        host: postgresql.decapod-db
         passwordSecret:
           key: postgresql-password
           name: argo-postgres-config

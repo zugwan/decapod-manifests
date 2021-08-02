@@ -13,6 +13,18 @@ metadata:
 data:
   config: |
     containerRuntimeExecutor: k8sapi
+    metricsConfig:
+      enabled: true
+      path: /metrics
+      port: 9090
+      servicePort: 8080
+      servicePortName: metrics
+    telemetryConfig:
+      enabled: true
+      path: /telemetry
+      port: 8081
+      servicePort: 8081
+      servicePortName: telemetry
     persistence:
       archive: true
       nodeStatusOffLoad: true

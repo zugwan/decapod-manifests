@@ -14,6 +14,7 @@ metadata:
 spec:
   ports:
   - port: 2746
+    name: http
     targetPort: 2746
   selector:
     app.kubernetes.io/name: argo-workflows-server

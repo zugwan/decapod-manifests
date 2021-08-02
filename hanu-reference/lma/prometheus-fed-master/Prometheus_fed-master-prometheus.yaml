@@ -64,6 +64,6 @@ spec:
         - ReadWriteOnce
         resources:
           requests:
-            storage: 20Gi
+            storage: 500Gi
         storageClassName: taco-storage
   portName: web

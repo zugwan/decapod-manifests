@@ -22,7 +22,7 @@ spec:
   paused: false
   logFormat: "logfmt"
   logLevel:  "info"
-  retention: "2h"
+  retention: "120h"
   alertmanagerConfigSelector:
     matchLabels:
       alertmanagerConfig: example

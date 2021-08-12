@@ -31,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727"
-        configmap-etc-hash: "d26552fafe3687b0db8e1b42f083fb589d22737e8599a22fa0605d5132240292"
+        configmap-etc-hash: "320be6ab15f94aeaf2559bbf585cb60307428cf64a210b6b707ea8525cd537a9"
     spec:
       serviceAccountName: nova-placement-api
       affinity:

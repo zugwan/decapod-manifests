@@ -13,7 +13,11 @@ metadata:
 spec:
   alerting:
     alertmanagers:
-      []
+      - namespace: lma
+        name: lma-alertmanager
+        port: web
+        pathPrefix: "/"
+        apiVersion: v2
   image: quay.io/prometheus/prometheus:v2.24.0
   version: v2.24.0
   externalLabels:

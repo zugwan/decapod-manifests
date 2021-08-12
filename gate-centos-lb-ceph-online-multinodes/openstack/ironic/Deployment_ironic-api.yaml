@@ -31,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "b5523a4bdbb1495d25171c6656a18a5e927c23ba7fb3e63cbb00a0ab5c321f55"
-        configmap-etc-hash: "cd9efca826ecbc3f4841ecd7f9b29d2c08660c8119000ea98cee5cddb7825bfa"
+        configmap-etc-hash: "7e9d358cb93975a6abb1d56994cc430f058a2423288dd0c60cb7ef14aa082618"
     spec:
       serviceAccountName: ironic-api
       affinity:

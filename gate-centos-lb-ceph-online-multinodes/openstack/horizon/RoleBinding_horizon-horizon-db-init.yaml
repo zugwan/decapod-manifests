@@ -1,0 +1,14 @@
+# Source: horizon/templates/job-db-init.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: horizon-horizon-db-init
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: horizon-openstack-horizon-db-init
+subjects:
+  - kind: ServiceAccount
+    name: horizon-db-init
+    namespace: openstack

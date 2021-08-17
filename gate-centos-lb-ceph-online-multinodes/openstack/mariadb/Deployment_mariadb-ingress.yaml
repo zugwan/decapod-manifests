@@ -1,0 +1,166 @@
+# Source: mariadb/templates/deployment-ingress.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb-ingress
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+  labels:
+    release_group: mariadb
+    application: mariadb
+    component: ingress
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      release_group: mariadb
+      application: mariadb
+      component: ingress
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        release_group: mariadb
+        application: mariadb
+        component: ingress
+      annotations:
+        "openstackhelm.openstack.org/release_uuid": ""
+        configmap-bin-hash: "fce4203ed4540d925f06629a1a0cbdd1fdc3f84c827840aa90934decabc9b37e"
+        configmap-etc-hash: "9c8f444575d7dc274e9ba15913f76505352f12cdf774f09169dc101adfa4fc10"
+    spec:
+      shareProcessNamespace: true
+      serviceAccountName: mariadb-ingress
+      securityContext:
+        runAsUser: 65534
+      affinity:
+        
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: release_group
+                    operator: In
+                    values:
+                    - mariadb
+                  - key: application
+                    operator: In
+                    values:
+                    - mariadb
+                  - key: component
+                    operator: In
+                    values:
+                    - ingress
+              topologyKey: kubernetes.io/hostname
+            weight: 10
+      nodeSelector:
+        openstack-control-plane: enabled
+      terminationGracePeriodSeconds: 60
+      initContainers:
+        
+        - name: init
+          image: "quay.io/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:mariadb-ingress-error-pages"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+      containers:
+        - name: ingress
+          image: "quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.9.0"
+          imagePullPolicy: IfNotPresent
+          
+          securityContext:
+            readOnlyRootFilesystem: false
+            runAsUser: 0
+          
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: RELEASE_NAME
+              value: "mariadb"
+            - name: INGRESS_CLASS
+              value: "mariadb-mariadb-ingress"
+            - name: ERROR_PAGE_SERVICE
+              value: "mariadb-ingress-error-pages"
+          command:
+            - /tmp/mariadb-ingress-controller.sh
+            - start
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /tmp/mariadb-ingress-controller.sh
+                  - stop
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: mariadb-bin
+              mountPath: /tmp/mariadb-ingress-controller.sh
+              subPath: mariadb-ingress-controller.sh
+              readOnly: true
+            - name: mariadb-ingress-etc
+              mountPath: /etc/nginx/template/nginx.tmpl
+              subPath: nginx.tmpl
+              readOnly: true
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: mariadb-bin
+          configMap:
+            name: mariadb-bin
+            defaultMode: 0555
+        - name: mariadb-ingress-etc
+          configMap:
+            name: mariadb-ingress-etc
+            defaultMode: 0444

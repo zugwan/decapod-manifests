@@ -1,0 +1,14 @@
+# Source: heat/templates/deployment-engine.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: heat-heat-engine
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: heat-openstack-heat-engine
+subjects:
+  - kind: ServiceAccount
+    name: heat-engine
+    namespace: openstack

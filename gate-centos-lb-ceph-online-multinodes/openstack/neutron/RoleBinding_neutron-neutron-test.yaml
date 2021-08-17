@@ -1,0 +1,14 @@
+# Source: neutron/templates/pod-rally-test.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: neutron-neutron-test
+  namespace: openstack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: neutron-openstack-neutron-test
+subjects:
+  - kind: ServiceAccount
+    name: neutron-test
+    namespace: openstack

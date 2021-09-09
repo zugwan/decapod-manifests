@@ -38,7 +38,7 @@ spec:
           - "--configmap"
           - "argo-workflows-operator-workflow-controller-configmap"
           - "--executor-image"
-          - "quay.io/argoproj/argoexec:v3.0.7"
+          - "quay.io/argoproj/argoexec:v3.1.0"
           - "--loglevel"
           - "info"
           - "--gloglevel"

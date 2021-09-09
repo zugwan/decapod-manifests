@@ -44,7 +44,7 @@ spec:
           - server
           - --configmap=argo-workflows-operator-workflow-controller-configmap
           - "--secure=false"
-          - --auth-mode [server]
+          - "--auth-mode=[server]"
           ports:
           - name: web
             containerPort: 2746

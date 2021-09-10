@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/component: server
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: argo-workflows
-    app.kubernetes.io/version: "v3.1.0"
+    app.kubernetes.io/version: "v3.1.9"
 spec:
   replicas: 1
   selector:
@@ -26,12 +26,12 @@ spec:
         app.kubernetes.io/component: server
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: argo-workflows
-        app.kubernetes.io/version: "v3.1.0"
+        app.kubernetes.io/version: "v3.1.9"
     spec:
       serviceAccountName: argo-workflows-operator-server
       containers:
         - name: argo-server
-          image: "quay.io/argoproj/argocli:v3.1.0"
+          image: "quay.io/argoproj/argocli:v3.1.9"
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false

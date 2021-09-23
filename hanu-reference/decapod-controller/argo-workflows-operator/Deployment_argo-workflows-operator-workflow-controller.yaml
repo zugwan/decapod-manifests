@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/component: workflow-controller
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: argo-workflows
-    app.kubernetes.io/version: "v3.1.0"
+    app.kubernetes.io/version: "v3.1.9"
 spec:
   replicas: 1
   selector:
@@ -26,19 +26,19 @@ spec:
         app.kubernetes.io/component: workflow-controller
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: argo-workflows
-        app.kubernetes.io/version: "v3.1.0"
+        app.kubernetes.io/version: "v3.1.9"
     spec:
       serviceAccountName: argo-workflows-operator-workflow-controller
       containers:
         - name: controller
-          image: "quay.io/argoproj/workflow-controller:v3.1.0"
+          image: "quay.io/argoproj/workflow-controller:v3.1.9"
           imagePullPolicy: Always
           command: [ "workflow-controller" ]
           args:
           - "--configmap"
           - "argo-workflows-operator-workflow-controller-configmap"
           - "--executor-image"
-          - "quay.io/argoproj/argoexec:v3.0.7"
+          - "quay.io/argoproj/argoexec:v3.1.9"
           - "--loglevel"
           - "info"
           - "--gloglevel"

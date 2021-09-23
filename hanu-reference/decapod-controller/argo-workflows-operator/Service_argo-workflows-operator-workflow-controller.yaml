@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/component: workflow-controller
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: argo-workflows
-    app.kubernetes.io/version: "v3.1.0"
+    app.kubernetes.io/version: "v3.1.9"
 spec:
   ports:
   - name: metrics

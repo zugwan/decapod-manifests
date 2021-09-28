@@ -20,7 +20,7 @@ spec:
     metadata:
       annotations:
         configmap-bin-hash: 645b0d7e28e8bdfbf61d768043382ec1b8d1ef241e239fdb7f2d4989a84e1727
-        configmap-etc-hash: 56cc4486e6b8f0f69538fee2146f869e464d1320050fa2617ab91ff6705b3b80
+        configmap-etc-hash: eee1628dc912f5b7f972dcd5d9103ef1a68bc14b2b350c36e0bfa77cd250d1a4
         openstackhelm.openstack.org/release_uuid: ""
       labels:
         application: nova

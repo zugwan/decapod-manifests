@@ -5,7 +5,7 @@ metadata:
   name: grafana-dashboard-istio-mesh
   namespace: istio-system
   labels:
-    grafana_serivce_mesh_dashbaord: "1"
+    grafana_dashboard: "1"
     app: grafana
 data:
   istio-mesh-dashboard.json: |-

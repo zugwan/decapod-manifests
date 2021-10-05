@@ -6,7 +6,7 @@ metadata:
   name: grafana-dashboard-istio-control-plane
   namespace: istio-system
   labels:
-    grafana_serivce_mesh_dashbaord: "1"
+    grafana_dashboard: "1"
     app: grafana
 data:
   istio-control-plane-dashboard.json: |-

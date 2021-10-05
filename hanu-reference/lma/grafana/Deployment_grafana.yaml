@@ -77,6 +77,8 @@ spec:
               value: "/tmp/dashboards"
             - name: RESOURCE
               value: "both"
+            - name: NAMESPACE
+              value: "ALL"
           resources:
             {}
           volumeMounts:

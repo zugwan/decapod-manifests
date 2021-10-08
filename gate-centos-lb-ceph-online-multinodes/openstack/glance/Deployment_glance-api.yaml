@@ -31,7 +31,7 @@ spec:
       annotations:
         "openstackhelm.openstack.org/release_uuid": ""
         configmap-bin-hash: "bfd669e36a5fe8c2192d53955aced162284839aafdbe007e08ea81a588f10f8f"
-        configmap-etc-hash: "7b012b9ecb43f26c7fe009336af15ee32a712b126d97e91f913a71ef8113042a"
+        configmap-etc-hash: "2d8bd6c62283df731026c04635acd69f1e033acff69ee3032edec5ecbdc928c3"
     spec:
       serviceAccountName: glance-api
       securityContext:

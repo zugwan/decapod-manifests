@@ -1,7 +1,0 @@
-# Source: mariadb/templates/configmap-services-tcp.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mariadb-services-tcp
-data:
-  3306: "openstack/mariadb-server:3306"

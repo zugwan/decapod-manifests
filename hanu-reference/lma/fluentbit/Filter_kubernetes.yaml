@@ -33,17 +33,7 @@ spec:
       removePrefix: kubernetes_
   - rewriteTag:
       rules:
-      - key: $kubernetes['container_name']
-        newTag: intended_drop.$TAG
-        regex: ^(kibana|elasticsearch|fluent-bit)$
-        keep: false
-      - key: $kubernetes['namespace_name']
-        newTag:  seperate.platform.$TAG
-        regex: ^(kube-system|lma|fed|argo|openstack|istio-system|istio-services|trident|registry)$
-        keep: false
-      - key: "$log"
-        regex: "(update.?error)"
-        newTag: m_critical.$TAG
-        keep: true
+      - $kubernetes['container_name'] ^(kibana|elasticsearch|fluent-bit)$ intended_drop.$TAG false
+      - $kubernetes['namespace_name'] ^(kube-system|lma|fed|argo|openstack|istio-system|istio-services|trident|registry)$ seperate.platform.$TAG false
+      - $log (update.?error) m_critical.$TAG true
       emitterName: alertrule_match
-      emitterStorageType: memory

@@ -17,12 +17,12 @@ spec:
     httpUser:
       valueFrom:
         secretKeyRef:
-          name: fluentbit-fluentbit-operat-es-secret
+          name: ZWxhc3RpYw==-es-secret
           key: username
     httpPassword:
       valueFrom:
         secretKeyRef:
-          name: fluentbit-fluentbit-operat-es-secret
+          name: ZWxhc3RpYw==-es-secret
           key: password
     tls:
       verify: false

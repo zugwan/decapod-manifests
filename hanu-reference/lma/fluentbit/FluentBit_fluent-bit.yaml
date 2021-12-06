@@ -6,12 +6,17 @@ metadata:
   namespace: lma
   labels:
     app.kubernetes.io/name: fluent-bit
-    app.kubernetes.io/version: v1.4.5
+    app.kubernetes.io/version: 25bc31cd4333f7f77435561ec70bc68e0c73a194
 spec:
-  image: "siim/fluent-bit-for-operator:v1.4.6"
+  image: "ghcr.io/openinfradev/fluentbit:25bc31cd4333f7f77435561ec70bc68e0c73a194"
   positionDB:
     hostPath:
       path: /var/log/flb_kube.db
       type: FileOrCreate
   fluentBitConfigName: fluent-bit-config
   containerLogRealPath: /var/lib/docker/containers
+  tolerations:
+  - key: node-role.kubernetes.io/master 
+    operator: Exists
+  - key: node-role.kubernetes.io/node 
+    operator: Exists

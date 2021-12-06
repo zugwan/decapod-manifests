@@ -6,7 +6,7 @@ metadata:
   labels:
     app: fluentbit-operator-operator
     
-    chart: fluentbit-operator-1.0.10
+    chart: fluentbit-operator-1.2.0
     release: "fluentbit-operator"
     heritage: "Helm"
 rules:
@@ -38,6 +38,7 @@ rules:
       - ""
     resources:
       - secrets
+      - configmaps
     verbs:
       - create
       - delete
@@ -66,6 +67,7 @@ rules:
       - fluentbits
       - inputs
       - outputs
+      - parsers
     verbs:
       - create
       - delete

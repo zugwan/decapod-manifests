@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/version: "8.2.2"
     app.kubernetes.io/managed-by: Helm
 data:
-  plugins: vonage-status-panel,grafana-piechart-panel,devopsprodigy-kubegraf-app
+  plugins: {}
   grafana.ini: |
     [analytics]
     check_for_updates = true
@@ -26,5 +26,4 @@ data:
     provisioning = /etc/grafana/provisioning
     [plugins]
     devopsprodigy-kubegraf-app = true
-    grafana-piechart-panel = true
     vonage-status-panel = true

@@ -4,7 +4,7 @@ kind: ClusterRole
 metadata:
   name: argo-workflows-operator-workflow-controller
   labels:
-    helm.sh/chart: argo-workflows-0.2.6
+    helm.sh/chart: argo-workflows-0.9.3
     app.kubernetes.io/name: argo-workflows-workflow-controller
     app.kubernetes.io/instance: argo-workflows-operator
     app.kubernetes.io/component: workflow-controller
@@ -44,6 +44,8 @@ rules:
   resources:
   - workflows
   - workflows/finalizers
+  - workflowtasksets
+  - workflowtasksets/finalizers
   verbs:
   - get
   - list

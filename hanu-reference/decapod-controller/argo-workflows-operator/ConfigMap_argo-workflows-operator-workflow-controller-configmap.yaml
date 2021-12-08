@@ -4,7 +4,7 @@ kind: ConfigMap
 metadata:
   name: argo-workflows-operator-workflow-controller-configmap
   labels:
-    helm.sh/chart: argo-workflows-0.2.6
+    helm.sh/chart: argo-workflows-0.9.3
     app.kubernetes.io/name: argo-workflows-cm
     app.kubernetes.io/instance: argo-workflows-operator
     app.kubernetes.io/component: workflow-controller
@@ -17,6 +17,7 @@ data:
       enabled: true
       path: /metrics
       port: 9090
+      portName: metrics
       servicePort: 8080
       servicePortName: metrics
     telemetryConfig:

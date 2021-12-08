@@ -4,13 +4,13 @@ kind: Service
 metadata:
   name: argo-workflows-operator-workflow-controller
   labels:
-    helm.sh/chart: argo-workflows-0.2.6
+    helm.sh/chart: argo-workflows-0.9.3
     app.kubernetes.io/name: argo-workflows-workflow-controller
     app.kubernetes.io/instance: argo-workflows-operator
     app.kubernetes.io/component: workflow-controller
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: argo-workflows
-    app.kubernetes.io/version: "v3.1.9"
+    app.kubernetes.io/version: "v3.2.4"
 spec:
   ports:
   - name: metrics

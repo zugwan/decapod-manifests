@@ -1,0 +1,15 @@
+---
+# Source: postgresql/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-configuration
+  labels:
+    app.kubernetes.io/name: postgresql
+    helm.sh/chart: postgresql-10.5.2
+    app.kubernetes.io/instance: postgresql
+    app.kubernetes.io/managed-by: Helm
+  namespace: decapod-db
+data:
+  postgresql.conf: |
+    listen_addresses = '*'

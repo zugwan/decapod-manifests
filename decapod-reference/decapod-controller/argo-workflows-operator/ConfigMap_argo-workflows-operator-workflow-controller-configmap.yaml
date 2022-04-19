@@ -1,0 +1,41 @@
+# Source: argo-workflows/templates/controller/workflow-controller-config-map.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argo-workflows-operator-workflow-controller-configmap
+  labels:
+    helm.sh/chart: argo-workflows-0.2.6
+    app.kubernetes.io/name: argo-workflows-cm
+    app.kubernetes.io/instance: argo-workflows-operator
+    app.kubernetes.io/component: workflow-controller
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: argo-workflows
+data:
+  config: |
+    containerRuntimeExecutor: k8sapi
+    metricsConfig:
+      enabled: true
+      path: /metrics
+      port: 9090
+      servicePort: 8080
+      servicePortName: metrics
+    telemetryConfig:
+      enabled: true
+      path: /telemetry
+      port: 8081
+      servicePort: 8081
+      servicePortName: telemetry
+    persistence:
+      archive: true
+      nodeStatusOffLoad: true
+      postgresql:
+        database: postgres
+        host: postgresql.decapod-db
+        passwordSecret:
+          key: postgresql-password
+          name: argo-postgres-config
+        port: 5432
+        tableName: argo_workflows
+        userNameSecret:
+          key: postgresql-username
+          name: argo-postgres-config

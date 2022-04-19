@@ -1,0 +1,17 @@
+# Source: fluentbit-operator/templates/fluentbit/outputs.yaml
+# regex-based log exporter
+apiVersion: logging.kubesphere.io/v1alpha2
+kind: Output
+metadata:
+  name: fluentbit-cr-taco-exporter
+  namespace: lma
+  labels:
+    logging.kubesphere.io/enabled: "true"
+    app.kubernetes.io/version: v0.0.1
+spec:
+  match: "m_*"
+  http:
+    host: fluentbit-operator-exporter.lma.svc.cluster.local
+    port: 2112
+    uri: "/logs"
+    format: json

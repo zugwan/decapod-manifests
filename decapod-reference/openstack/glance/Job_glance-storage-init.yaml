@@ -1,0 +1,91 @@
+# Source: glance/templates/job-storage-init.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: glance-storage-init
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+spec:
+  template:
+    metadata:
+      labels:
+        release_group: glance
+        application: glance
+        component: storage-init
+    spec:
+      serviceAccountName: glance-storage-init
+      securityContext:
+        runAsUser: 42415
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+      initContainers:
+        
+        - name: init
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: ""
+            - name: DEPENDENCY_JOBS
+              value: "glance-ks-user"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+        
+      containers:
+        - name: glance-storage-init
+          image: "deploy001:5000/port/ceph-config-helper:v1.14.3"
+          imagePullPolicy: IfNotPresent
+          
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: STORAGE_BACKEND
+              value: "taco-storage"
+          command:
+            - /tmp/storage-init.sh
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: glance-bin
+              mountPath: /tmp/storage-init.sh
+              subPath: storage-init.sh
+              readOnly: true
+            
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: glance-bin
+          configMap:
+            name: glance-bin
+            defaultMode: 0555

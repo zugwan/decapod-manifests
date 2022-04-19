@@ -1,0 +1,79 @@
+# Source: argo-workflows/templates/controller/workflow-controller-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo-workflows-operator-workflow-controller
+  labels:
+    helm.sh/chart: argo-workflows-0.2.6
+    app.kubernetes.io/name: argo-workflows-workflow-controller
+    app.kubernetes.io/instance: argo-workflows-operator
+    app.kubernetes.io/component: workflow-controller
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: argo-workflows
+    app.kubernetes.io/version: "v3.2.6"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argo-workflows-workflow-controller
+      app.kubernetes.io/instance: argo-workflows-operator
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: argo-workflows-0.2.6
+        app.kubernetes.io/name: argo-workflows-workflow-controller
+        app.kubernetes.io/instance: argo-workflows-operator
+        app.kubernetes.io/component: workflow-controller
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: argo-workflows
+        app.kubernetes.io/version: "v3.2.6"
+    spec:
+      serviceAccountName: argo-workflows-operator-workflow-controller
+      containers:
+        - name: controller
+          image: "quay.io/argoproj/workflow-controller:v3.2.6"
+          imagePullPolicy: Always
+          command: [ "workflow-controller" ]
+          args:
+          - "--configmap"
+          - "argo-workflows-operator-workflow-controller-configmap"
+          - "--executor-image"
+          - "quay.io/argoproj/argoexec:v3.2.6"
+          - "--loglevel"
+          - "info"
+          - "--gloglevel"
+          - "0"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          env:
+            - name: ARGO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: LEADER_ELECTION_IDENTITY
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+          resources:
+            {}
+          ports:
+            - name: metrics
+              containerPort: 9090
+            - containerPort: 6060
+          livenessProbe: 
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 6060
+            initialDelaySeconds: 90
+            periodSeconds: 60
+            timeoutSeconds: 30
+      nodeSelector:
+        kubernetes.io/os: linux

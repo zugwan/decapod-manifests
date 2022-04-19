@@ -1,0 +1,78 @@
+# Source: argo-workflows/templates/server/server-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo-workflows-operator-server
+  labels:
+    helm.sh/chart: argo-workflows-0.2.6
+    app.kubernetes.io/name: argo-workflows-server
+    app.kubernetes.io/instance: argo-workflows-operator
+    app.kubernetes.io/component: server
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: argo-workflows
+    app.kubernetes.io/version: "v3.2.6"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argo-workflows-server
+      app.kubernetes.io/instance: argo-workflows-operator
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: argo-workflows-0.2.6
+        app.kubernetes.io/name: argo-workflows-server
+        app.kubernetes.io/instance: argo-workflows-operator
+        app.kubernetes.io/component: server
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: argo-workflows
+        app.kubernetes.io/version: "v3.2.6"
+    spec:
+      serviceAccountName: argo-workflows-operator-server
+      containers:
+        - name: argo-server
+          image: "quay.io/argoproj/argocli:v3.2.6"
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+          args:
+          - server
+          - --configmap=argo-workflows-operator-workflow-controller-configmap
+          - --auth-mode=server
+          - "--secure=false"
+          ports:
+          - name: web
+            containerPort: 2746
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 2746
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          env:
+            - name: IN_CLUSTER
+              value: "true"
+            - name: ARGO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: BASE_HREF
+              value: "/"
+          resources:
+            {}
+          volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      nodeSelector:
+        kubernetes.io/os: linux
+

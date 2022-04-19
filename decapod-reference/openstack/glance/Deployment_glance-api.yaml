@@ -1,0 +1,200 @@
+# Source: glance/templates/deployment-api.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: glance-api
+  annotations:
+    "openstackhelm.openstack.org/release_uuid": ""
+  labels:
+    release_group: glance
+    application: glance
+    component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      release_group: glance
+      application: glance
+      component: api
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        release_group: glance
+        application: glance
+        component: api
+      annotations:
+        "openstackhelm.openstack.org/release_uuid": ""
+        configmap-bin-hash: "bfd669e36a5fe8c2192d53955aced162284839aafdbe007e08ea81a588f10f8f"
+        configmap-etc-hash: "7356a74e3d0610760273db2c5e27c8577af45a8dfd376856d81d634ff47fc1f7"
+    spec:
+      serviceAccountName: glance-api
+      securityContext:
+        runAsUser: 42415
+      affinity:
+        
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: release_group
+                    operator: In
+                    values:
+                    - glance
+                  - key: application
+                    operator: In
+                    values:
+                    - glance
+                  - key: component
+                    operator: In
+                    values:
+                    - api
+              topologyKey: kubernetes.io/hostname
+            weight: 10
+      nodeSelector:
+        openstack-control-plane: enabled
+      terminationGracePeriodSeconds: 600
+      initContainers:
+        
+        - name: init
+          image: "deploy001:5000/airshipit/kubernetes-entrypoint:v1.0.0"
+          imagePullPolicy: IfNotPresent  
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 65534
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "openstack:mariadb,openstack:keystone-api,openstack:rabbitmq"
+            - name: DEPENDENCY_JOBS
+              value: "glance-storage-init,glance-db-sync,glance-rabbit-init,glance-ks-user,glance-ks-endpoints"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+              value: ""
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            null
+        - name: glance-perms
+          image: "deploy001:5000/stein/ubuntu-source-glance-api:taco-0.1.0"
+          imagePullPolicy: IfNotPresent
+          
+          
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsUser: 0
+          command:
+            - chown
+            - -R
+            - "glance:"
+            - /var/lib/glance/images
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: glance-images
+              mountPath: /var/lib/glance/images
+        
+      containers:
+        - name: glance-api
+          image: "deploy001:5000/stein/ubuntu-source-glance-api:taco-0.1.0"
+          imagePullPolicy: IfNotPresent
+          
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          command:
+            - /tmp/glance-api.sh
+            - start
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /tmp/glance-api.sh
+                  - stop
+          ports:
+            - name: g-api
+              containerPort: 9292
+          readinessProbe:
+            tcpSocket:
+              port: 9292
+          livenessProbe:
+            tcpSocket:
+              port: 9292
+            initialDelaySeconds: 30
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: etcglance
+              mountPath: /etc/glance
+            - name: glance-bin
+              mountPath: /tmp/glance-api.sh
+              subPath: glance-api.sh
+              readOnly: true
+            - name: glance-etc
+              mountPath: /etc/glance/glance-api.conf
+              subPath: glance-api.conf
+              readOnly: true
+            - name: glance-etc
+              mountPath: /etc/glance/logging.conf
+              subPath: logging.conf
+              readOnly: true
+            - name: glance-etc
+              mountPath: /etc/glance/glance-api-paste.ini
+              subPath: glance-api-paste.ini
+              readOnly: true
+            - name: glance-etc
+              mountPath: /etc/glance/policy.json
+              subPath: policy.json
+              readOnly: true
+            - name: glance-etc
+              mountPath: /etc/glance/api_audit_map.conf
+              subPath: api_audit_map.conf
+              readOnly: true
+            - name: glance-etc
+              mountPath: /etc/glance/swift-store.conf
+              subPath: swift-store.conf
+              readOnly: true
+            - name: glance-images
+              mountPath: /var/lib/glance/images
+
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: etcglance
+          emptyDir: {}
+        - name: glance-bin
+          configMap:
+            name: glance-bin
+            defaultMode: 0555
+        - name: glance-etc
+          secret:
+            secretName: glance-etc
+            defaultMode: 0444
+        - name: glance-images
+          emptyDir: {}

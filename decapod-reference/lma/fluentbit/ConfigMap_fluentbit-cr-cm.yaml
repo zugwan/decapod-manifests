@@ -1,0 +1,118 @@
+# Source: fluentbit-operator/templates/fluentbit/cm-cr.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentbit-cr-cm
+  namespace: lma
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "2"
+  labels:
+    app: fluentbit-operator-operator
+    
+    chart: fluentbit-operator-1.2.1
+    release: "fluentbit"
+    heritage: "Helm"
+data:
+  create_template.sh: |-
+    #!/bin/sh
+    set -ex
+
+
+    echo "trying to setting policy hot-delete-14days..."
+    curl -k -u elastic:${ELASTIC_PW} -X PUT "${ES_URL}/_ilm/policy/hot-delete-14days" \
+      -H 'Content-Type:application/json' -H 'kbn-xsrf:true' -d @/tmp/ilm-hot-delete-14days.json
+    echo "trying to setting policy hot-delete-7days..."
+    curl -k -u elastic:${ELASTIC_PW} -X PUT "${ES_URL}/_ilm/policy/hot-delete-7days" \
+      -H 'Content-Type:application/json' -H 'kbn-xsrf:true' -d @/tmp/ilm-hot-delete-7days.json
+    echo "trying to setting policy hot-delete-3hour..."
+    curl -k -u elastic:${ELASTIC_PW} -X PUT "${ES_URL}/_ilm/policy/hot-delete-3hour" \
+      -H 'Content-Type:application/json' -H 'kbn-xsrf:true' -d @/tmp/ilm-hot-delete-3hour.json
+
+
+    echo "trying to setting Template platform..."
+    curl -k -u elastic:${ELASTIC_PW} -X PUT "${ES_URL}/_template/platform" \
+      -H 'Content-Type:application/json' -H 'kbn-xsrf:true' -d @/tmp/template-platform.json
+    echo "trying to setting Template application..."
+    curl -k -u elastic:${ELASTIC_PW} -X PUT "${ES_URL}/_template/application" \
+      -H 'Content-Type:application/json' -H 'kbn-xsrf:true' -d @/tmp/template-application.json
+    echo "trying to setting Template syslog..."
+    curl -k -u elastic:${ELASTIC_PW} -X PUT "${ES_URL}/_template/syslog" \
+      -H 'Content-Type:application/json' -H 'kbn-xsrf:true' -d @/tmp/template-syslog.json
+
+
+  
+    echo "trying to create initial index container-000001..."
+    curl -k -u elastic:${ELASTIC_PW} -X PUT "${ES_URL}/container-000001" \
+      -H 'Content-Type:application/json' -H 'kbn-xsrf:true' -d @/tmp/index-container.json
+  
+    echo "trying to create initial index platform-000001..."
+    curl -k -u elastic:${ELASTIC_PW} -X PUT "${ES_URL}/platform-000001" \
+      -H 'Content-Type:application/json' -H 'kbn-xsrf:true' -d @/tmp/index-platform.json
+  
+    echo "trying to create initial index syslog-000001..."
+    curl -k -u elastic:${ELASTIC_PW} -X PUT "${ES_URL}/syslog-000001" \
+      -H 'Content-Type:application/json' -H 'kbn-xsrf:true' -d @/tmp/index-syslog.json
+  
+
+
+  ilm-hot-delete-14days.json: |- 
+    {"policy":{"phases":{"delete":{"actions":{"delete":{}},"min_age":"14d"},"hot":{"actions":{"rollover":{"max_age":"1d","max_docs":5000000000,"max_size":"30gb"},"set_priority":{"priority":100}}}}}}
+  ilm-hot-delete-7days.json: |- 
+    {"policy":{"phases":{"delete":{"actions":{"delete":{}},"min_age":"7d"},"hot":{"actions":{"rollover":{"max_age":"1d","max_docs":5000000000,"max_size":"30gb"},"set_priority":{"priority":100}}}}}}
+  ilm-hot-delete-3hour.json: |- 
+    {"policy":{"phases":{"delete":{"actions":{"delete":{}},"min_age":"3h"},"hot":{"actions":{"rollover":{"max_age":"1h","max_docs":5000000000,"max_size":"30gb"},"set_priority":{"priority":100}}}}}}
+
+
+  template-platform.json: |-
+    {"index_patterns":"platform*","settings":{"index.lifecycle.name":"hot-delete-14days","index.lifecycle.rollover_alias":"platform","number_of_replicas":1,"number_of_shards":3,"refresh_interval":"30s"}}
+  template-application.json: |-
+    {"index_patterns":"container*","settings":{"index.lifecycle.name":"hot-delete-3hour","index.lifecycle.rollover_alias":"container","number_of_replicas":1,"number_of_shards":3,"refresh_interval":"30s"}}
+  template-syslog.json: |-
+    {"index_patterns":"syslog*","settings":{"index.lifecycle.name":"hot-delete-14days","index.lifecycle.rollover_alias":"syslog","number_of_replicas":1,"number_of_shards":2,"refresh_interval":"30s"}}
+
+
+  
+  index-container.json: |-
+    {
+      "aliases": {
+        "container":{
+          "is_write_index": true
+        }
+      }
+    }
+
+  
+  index-platform.json: |-
+    {
+      "aliases": {
+        "platform":{
+          "is_write_index": true
+        }
+      }
+    }
+  
+  index-syslog.json: |-
+    {
+      "aliases": {
+        "syslog":{
+          "is_write_index": true
+        }
+      }
+    }
+
+  
+  create_user.sh: |-
+    #!/bin/sh
+    set -ex
+    curl -k -u elastic:${ELASTIC_PW} -X POST ${ES_URL}/_security/user/$1 -H 'Content-Type: application/json' -d'
+    {
+      "password" : "tacoword",
+      "roles" : [ "superuser" ],
+      "full_name" : "LMA user by TACO",
+      "email" : "taco@taco.com",
+      "metadata" : {
+        "intelligence" : 7
+      }
+    }
+    '

@@ -1,0 +1,28 @@
+# Source: argo-workflows/templates/controller/workflow-controller-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: argo-workflows-operator-workflow-controller
+  labels:
+    helm.sh/chart: argo-workflows-0.2.6
+    app.kubernetes.io/name: argo-workflows-workflow-controller
+    app.kubernetes.io/instance: argo-workflows-operator
+    app.kubernetes.io/component: workflow-controller
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: argo-workflows
+    app.kubernetes.io/version: "v3.2.6"
+spec:
+  ports:
+  - name: metrics
+    port: 8080
+    protocol: TCP
+    targetPort: 9090
+  - name: telemetry
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    app.kubernetes.io/name: argo-workflows-workflow-controller
+    app.kubernetes.io/instance: argo-workflows-operator
+  sessionAffinity: None
+  type: ClusterIP
